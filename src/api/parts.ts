@@ -1,12 +1,12 @@
 import { supabase } from './supabase'
 import type { Part, PartInput } from '@/types'
 
-/** 获取零配件列表。非管理员仅能看到 is_published 的配件。 */
+/** 获取零配件列表。非管理员仅能看到 is_published 的配件。嵌入所属档位 tier。 */
 export async function fetchParts(opts?: {
   categoryId?: number | null
   publishedOnly?: boolean
 }): Promise<Part[]> {
-  let query = supabase.from('parts').select('*')
+  let query = supabase.from('parts').select('*, tier:category_tiers(*)')
   if (opts?.categoryId != null) query = query.eq('category_id', opts.categoryId)
   if (opts?.publishedOnly) query = query.eq('is_published', true)
   const { data, error } = await query
@@ -23,7 +23,7 @@ export async function fetchParts(opts?: {
 export async function fetchPart(id: number): Promise<Part | null> {
   const { data, error } = await supabase
     .from('parts')
-    .select('*')
+    .select('*, tier:category_tiers(*)')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error

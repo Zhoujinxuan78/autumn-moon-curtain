@@ -4,8 +4,8 @@ import { showConfirmDialog, showToast } from 'vant'
 import { useCustomProducts } from '@/composables/useCustomProducts'
 import { useParts } from '@/composables/useParts'
 import ImageUploader from '@/components/ImageUploader.vue'
-import type { CustomProduct, CustomProductInput } from '@/types'
-import { formatDateTime } from '@/utils/format'
+import { formatPrice, formatDateTime } from '@/utils/format'
+import type { CustomProduct, CustomProductInput, Part } from '@/types'
 
 const { products, load, add, update, remove, setParts } = useCustomProducts()
 const { parts } = useParts()
@@ -24,6 +24,7 @@ const form = ref<CustomProductInput>({
 })
 const coverPaths = ref<string[]>([])
 const galleryPaths = ref<string[]>([])
+// 键为 partId，值为数量（档位由配件自身携带，无需单独选择）
 const partQty = ref<Record<number, number>>({})
 const visibleDateLocal = ref('')
 
@@ -84,7 +85,8 @@ async function openEdit(p: CustomProduct) {
     const { fetchProductParts } = await import('@/api/customProducts')
     const rows = await fetchProductParts(p.id)
     for (const r of rows) {
-      if (r.part?.id) partQty.value[r.part.id] = r.quantity
+      const pid = r.part?.id
+      if (pid) partQty.value[pid] = r.quantity
     }
   } catch {
     /* 忽略 */
@@ -92,10 +94,15 @@ async function openEdit(p: CustomProduct) {
   showForm.value = true
 }
 
+const qtyOf = (partId: number) => partQty.value[partId] || 0
+const setQty = (partId: number, v: number) => {
+  partQty.value[partId] = v
+}
+
 const selectedParts = () =>
   Object.entries(partQty.value)
     .filter(([, q]) => q > 0)
-    .map(([id, q]) => ({ part_id: Number(id), quantity: q }))
+    .map(([pid, q]) => ({ part_id: Number(pid), quantity: q }))
 
 async function save() {
   if (!form.value.title) {
@@ -237,22 +244,32 @@ async function onDelete(p: CustomProduct) {
       :style="{ height: '80%' }"
     >
       <div class="p-3">
-        <div class="text-sm font-medium mb-2">选择所用配件（数量 > 0 即关联）</div>
+        <div class="text-sm font-medium mb-2">选择所用配件（数量 &gt; 0 即关联）</div>
         <div v-if="parts.length === 0" class="text-sm text-gray-400">
           请先到「配件管理」添加配件
         </div>
-        <div
-          v-for="p in parts"
-          :key="p.id"
-          class="card flex items-center justify-between p-2 mb-2"
-        >
-          <span class="text-sm">{{ p.name }}</span>
-          <van-stepper
-            :model-value="partQty[p.id] || 0"
-            min="0"
-            integer
-            @change="(v: number) => (partQty[p.id] = v)"
-          />
+        <div v-for="p in parts" :key="p.id" class="card p-2 mb-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sm">{{ p.name }}</span>
+            <span
+              v-if="p.tier"
+              class="text-[10px] px-1.5 py-0.5 rounded-full"
+              style="background: rgba(21, 122, 110, 0.1); color: #157a6e"
+            >
+              {{ p.tier.name }}
+            </span>
+          </div>
+          <div class="flex items-center justify-between mt-1.5">
+            <span class="text-xs text-gray-400">
+              {{ formatPrice(p.price, p.price_unit) }}
+            </span>
+            <van-stepper
+              :model-value="qtyOf(p.id)"
+              min="0"
+              integer
+              @change="(v: number) => setQty(p.id, v)"
+            />
+          </div>
         </div>
         <van-button block type="primary" class="mt-2" @click="showPartsPicker = false">
           完成

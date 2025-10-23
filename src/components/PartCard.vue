@@ -2,12 +2,20 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Part } from '@/types'
-import { partCoverUrl, formatPrice } from '@/utils/format'
+import { partCoverUrl, formatPrice, partStartPrice } from '@/utils/format'
 import { getPublicUrl } from '@/api/storage'
 
 const props = defineProps<{ part: Part }>()
 const router = useRouter()
 const cover = computed(() => getPublicUrl(partCoverUrl(props.part)))
+
+const start = computed(() => partStartPrice(props.part))
+// 仅展示前台可见的档位标签
+const tier = computed(() =>
+  props.part.tier && props.part.tier.is_visible !== false
+    ? props.part.tier
+    : null,
+)
 </script>
 
 <template>
@@ -19,7 +27,15 @@ const cover = computed(() => getPublicUrl(partCoverUrl(props.part)))
     <div class="px-2 py-2">
       <div class="text-sm font-medium truncate">{{ part.name }}</div>
       <div class="mt-1 text-sm font-semibold" style="color: #157a6e">
-        {{ formatPrice(part.price, part.price_unit) }}
+        {{ formatPrice(start.price, start.price_unit) }}
+      </div>
+      <div v-if="tier" class="mt-1.5 flex flex-wrap gap-1">
+        <span
+          class="text-[10px] px-1.5 py-0.5 rounded-full"
+          style="background: rgba(21, 122, 110, 0.1); color: #157a6e"
+        >
+          {{ tier.name }}
+        </span>
       </div>
     </div>
   </div>

@@ -25,7 +25,7 @@ const entries = [
       class="rounded-xl p-6 text-white"
       style="background: linear-gradient(135deg, #157a6e, #0f5a50)"
     >
-      <h1 class="text-2xl font-semibold">帘语窗帘</h1>
+      <h1 class="text-2xl font-semibold">秋月窗帘</h1>
       <p class="mt-2 text-sm opacity-90">
         专注窗帘配件与定制落地，看得见的专业。
       </p>

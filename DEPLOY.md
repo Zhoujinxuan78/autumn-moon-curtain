@@ -50,16 +50,52 @@ GitHub Actions 会自动构建并部署到 Cloudflare Pages，产物在 `https:/
 
 ## 第 4 步：FreeDomain 申请免费域名
 
-1. 到 FreeDomain（DigitalPlatDev/FreeDomain）申请一个二级域名，例如 `curtain.us.kg`。
-2. 在其 DNS 面板添加一条 **CNAME** 记录：
-   - 主机名：`curtain`（或 `@`）
-   - 目标：`curtain-showcase.pages.dev`
-   - 代理/小云朵：开启（走 Cloudflare CDN，免费加速）
+> `.us.kg` 域名由 DigitalPlatDev/FreeDomain 提供，其 DNS 本身就跑在 Cloudflare 上——
+> 这正是它和 Cloudflare Pages 搭配「零配置」的原因。
+
+1. 到 FreeDomain 注册入口（DigitalPlatDev/FreeDomain 仓库 README 会给出当前可用的申请门户，
+   常见为 `https://freedomain.org`）申请一个二级域名，例如 `curtain.us.kg`。
+   - 需先注册 FreeDomain 账号，搜索心仪前缀是否被占，提交后通常即时/几分钟生效。
+2. 进入该域名的 **DNS 管理面板**，添加一条 **CNAME** 记录：
+   - **类型**：`CNAME`
+   - **名称 / 主机名**：`curtain`（即子域 `curtain.us.kg`；想用根域就填 `@` 或留空，视面板而定）
+   - **目标 / 内容**：`curtain-showcase.pages.dev`（就是 Pages 给你的默认域名，**不要带 https://**）
+   - **代理 / 橙色小云朵**：**开启**（走 Cloudflare CDN，免费加速 + 隐藏真实源站）
+3. 保存后等 DNS 生效（几分钟，最长几十分钟）。可在本地验证：
+   ```bash
+   dig curtain.us.kg +short        # 应解析到 Cloudflare 的 IP（如 104.x / 172.x）
+   # 或
+   nslookup curtain.us.kg
+   ```
 
 ## 第 5 步：在 Pages 绑定自定义域
 
-Cloudflare Pages 控制台 → `curtain-showcase` → `Custom domains` → 添加 `curtain.us.kg`。
-由于域名本身就在 Cloudflare 上，验证通常自动完成，片刻后即可用自定义域名访问。
+两种方式任选其一：
+
+**方式 A（仪表盘，推荐）**
+Cloudflare 控制台 → `Workers & Pages` → `curtain-showcase` → `Custom domains`
+→ 输入 `curtain.us.kg` → 添加。
+因为域名本身就在 Cloudflare 上，所有权验证通常**自动通过**，几十秒到几分钟后状态变 `Active`，
+即可用 `https://curtain.us.kg` 访问。
+
+**方式 B（CLI，可放进脚本）**
+本地已配好 `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` 后执行：
+```bash
+npx wrangler pages domain add curtain.us.kg --project-name=curtain-showcase
+```
+（前提是第 4 步的 CNAME 已生效，否则验证会失败。）
+
+## 第 6 步：验证闭环
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" https://curtain.us.kg        # 期望 200
+curl -sS -o /dev/null -w "%{http_code}\n" https://curtain.us.kg/admin/login  # SPA 回退，期望 200
+```
+浏览器打开 `https://curtain.us.kg` 应能正常渲染（不再白屏），后台用 `super@test.com` / `363935xhb` 登录可增删改查。
+
+> **前置**：自定义域能访问的前提是 `curtain-showcase.pages.dev` 本身已能正常渲染。
+> 若 `.pages.dev` 仍白屏，先回到「白屏排查」（详见已沉淀的 skill `cloudflare-pages-vite-deploy`），
+> 域名绑了也只会把白屏搬过去。
 
 ---
 

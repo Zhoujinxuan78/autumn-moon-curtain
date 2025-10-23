@@ -20,6 +20,18 @@ export interface Category {
   sort_order: number
   is_active: boolean
   created_at: string
+  // 嵌入的类别档位
+  category_tiers?: CategoryTier[]
+}
+
+export interface CategoryTier {
+  id: number
+  category_id: number
+  code: string
+  name: string
+  sort_order: number
+  is_visible: boolean
+  created_at: string
 }
 
 export interface Part {
@@ -36,6 +48,10 @@ export interface Part {
   is_published: boolean
   created_at: string
   updated_at: string
+  // 所属质量档位（类别档位）
+  tier_id: number | null
+  // 列表/详情查询时嵌入的档位定义
+  tier?: CategoryTier | null
 }
 
 export interface CustomProduct {

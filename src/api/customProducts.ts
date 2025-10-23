@@ -39,10 +39,10 @@ export async function fetchProductParts(
 ): Promise<ProductPartRow[]> {
   const { data, error } = await supabase
     .from('product_parts_relation')
-    .select('quantity, part:parts(*)')
+    .select('quantity, part:parts(*, tier:category_tiers(*))')
     .eq('product_id', productId)
   if (error) throw error
-  return (data ?? []) as ProductPartRow[]
+  return (data ?? []) as unknown as ProductPartRow[]
 }
 
 export async function createProduct(
@@ -76,7 +76,7 @@ export async function deleteProduct(id: number): Promise<void> {
   if (error) throw error
 }
 
-/** 批量设置某成品关联的零件（先删后插）。 */
+/** 批量设置某成品关联的零件（先删后插）。档位由零件自身携带，无需单独指定。 */
 export async function setProductParts(
   productId: number,
   items: Array<{ part_id: number; quantity: number }>,
@@ -89,6 +89,12 @@ export async function setProductParts(
   if (items.length === 0) return
   const { error } = await supabase
     .from('product_parts_relation')
-    .insert(items.map((i) => ({ product_id: productId, ...i })))
+    .insert(
+      items.map((i) => ({
+        product_id: productId,
+        part_id: i.part_id,
+        quantity: i.quantity,
+      })),
+    )
   if (error) throw error
 }

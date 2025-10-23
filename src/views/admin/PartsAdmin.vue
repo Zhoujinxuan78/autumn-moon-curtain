@@ -4,10 +4,26 @@ import { showConfirmDialog, showToast } from 'vant'
 import { useParts } from '@/composables/useParts'
 import { useCategories } from '@/composables/useCategories'
 import ImageUploader from '@/components/ImageUploader.vue'
-import type { Part, PartInput, Category } from '@/types'
+import { fetchCategoryTiers } from '@/api/categoryTiers'
+import { partStartPrice, formatPrice } from '@/utils/format'
+import type { Part, PartInput, Category, CategoryTier } from '@/types'
 
 const { parts, load, add, update, remove } = useParts()
 const { categories } = useCategories()
+
+// 当前配件所属类别的档位列表（用于单选档位）
+const catTiers = ref<CategoryTier[]>([])
+async function loadCatTiers(categoryId: number | null) {
+  if (!categoryId) {
+    catTiers.value = []
+    return
+  }
+  try {
+    catTiers.value = await fetchCategoryTiers(categoryId, { includeHidden: true })
+  } catch {
+    catTiers.value = []
+  }
+}
 
 const showForm = ref(false)
 const editingId = ref<number | null>(null)
@@ -15,6 +31,7 @@ const editingId = ref<number | null>(null)
 const form = ref<PartInput>({
   name: '',
   category_id: null,
+  tier_id: null,
   description: '',
   price: null,
   price_unit: '个',
@@ -29,12 +46,14 @@ const coverPaths = ref<string[]>([])
 const galleryPaths = ref<string[]>([])
 
 const showCatPicker = ref(false)
+const showTierPicker = ref(false)
 const catOptions = ref<Array<{ text: string; value: number | null }>>([])
 
 function resetForm() {
   form.value = {
     name: '',
     category_id: null,
+    tier_id: null,
     description: '',
     price: null,
     price_unit: '个',
@@ -47,6 +66,7 @@ function resetForm() {
   specsText.value = '{}'
   coverPaths.value = []
   galleryPaths.value = []
+  catTiers.value = []
   editingId.value = null
 }
 
@@ -59,11 +79,12 @@ function openCreate() {
   showForm.value = true
 }
 
-function openEdit(p: Part) {
+async function openEdit(p: Part) {
   editingId.value = p.id
   form.value = {
     name: p.name,
     category_id: p.category_id,
+    tier_id: p.tier_id ?? null,
     description: p.description ?? '',
     price: p.price,
     price_unit: p.price_unit ?? '个',
@@ -80,15 +101,25 @@ function openEdit(p: Part) {
     { text: '未分类', value: null },
     ...categories.value.map((c: Category) => ({ text: c.name, value: c.id })),
   ]
+  await loadCatTiers(p.category_id)
   showForm.value = true
 }
 
 const catText = () =>
   catOptions.value.find((o) => o.value === form.value.category_id)?.text || '未分类'
+const tierText = () =>
+  catTiers.value.find((t) => t.id === form.value.tier_id)?.name || '选择档位'
 
 function onCatConfirm({ selectedValues }: { selectedValues: (number | null)[] }) {
   form.value.category_id = selectedValues[0] ?? null
+  form.value.tier_id = null
   showCatPicker.value = false
+  loadCatTiers(form.value.category_id)
+}
+
+function onTierConfirm({ selectedValues }: { selectedValues: (number | string)[] }) {
+  form.value.tier_id = Number(selectedValues[0])
+  showTierPicker.value = false
 }
 
 async function save() {
@@ -156,10 +187,11 @@ async function onDelete(p: Part) {
       <div>
         <div class="text-sm font-medium">{{ p.name }}</div>
         <div class="text-xs text-gray-400 mt-0.5">
-          {{ p.price != null ? '¥' + p.price : '面议' }}
+          {{ formatPrice(partStartPrice(p).price, partStartPrice(p).price_unit) }}
           <span :class="p.is_published ? 'text-green-600' : 'text-red-500'">
             · {{ p.is_published ? '已发布' : '草稿' }}
           </span>
+          <span v-if="p.tier" class="ml-1">· {{ p.tier.name }}</span>
         </div>
       </div>
       <div class="flex gap-2">
@@ -174,9 +206,9 @@ async function onDelete(p: Part) {
       v-model:show="showForm"
       position="bottom"
       round
-      :style="{ height: '92%' }"
+      :style="{ height: '94%' }"
     >
-      <div class="p-4 overflow-y-auto" style="max-height: 92vh">
+      <div class="p-4 overflow-y-auto" style="max-height: 94vh">
         <h3 class="text-base font-semibold mb-3">
           {{ editingId ? '编辑配件' : '新增配件' }}
         </h3>
@@ -186,6 +218,10 @@ async function onDelete(p: Part) {
           <van-field v-model="form.description" label="描述" type="textarea" rows="2" />
           <van-field v-model="priceText" label="价格" type="number" placeholder="留空为面议" />
           <van-field v-model="form.price_unit" label="单位" placeholder="个/米/套" />
+          <van-cell title="质量档位" :value="tierText()" is-link
+            :disabled="!catTiers.length"
+            @click="catTiers.length ? (showTierPicker = true) : showToast('该分类尚未设置档位，请先到分类管理添加')"
+          />
           <van-cell title="是否发布" center>
             <template #value><van-switch v-model="form.is_published" /></template>
           </van-cell>
@@ -207,6 +243,7 @@ async function onDelete(p: Part) {
             placeholder='{"材质":"棉"}'
           />
         </van-cell-group>
+
         <div class="flex gap-3 mt-4">
           <van-button block @click="showForm = false">取消</van-button>
           <van-button block type="primary" @click="save">保存</van-button>
@@ -219,6 +256,15 @@ async function onDelete(p: Part) {
         :columns="catOptions"
         @confirm="onCatConfirm"
         @cancel="showCatPicker = false"
+      />
+    </van-popup>
+
+    <van-popup v-model:show="showTierPicker" position="bottom" round>
+      <van-picker
+        :columns="catTiers.map((t) => ({ text: `${t.name}${t.is_visible ? '' : '（隐藏）'}`, value: t.id }))"
+        :model-value="form.tier_id != null ? [form.tier_id as number] : []"
+        @confirm="onTierConfirm"
+        @cancel="showTierPicker = false"
       />
     </van-popup>
   </div>

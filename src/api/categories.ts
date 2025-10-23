@@ -1,11 +1,11 @@
 import { supabase } from './supabase'
 import type { Category, CategoryInput } from '@/types'
 
-/** 获取分类列表。非管理员受 RLS 限制只能看到 is_active 的分类。 */
+/** 获取分类列表。非管理员受 RLS 限制只能看到 is_active 的分类。嵌入类别档位。 */
 export async function fetchCategories(opts?: {
   activeOnly?: boolean
 }): Promise<Category[]> {
-  let query = supabase.from('categories').select('*')
+  let query = supabase.from('categories').select('*, category_tiers(*)')
   if (opts?.activeOnly) query = query.eq('is_active', true)
   const { data, error } = await query
   if (error) throw error
@@ -21,7 +21,7 @@ export async function fetchCategories(opts?: {
 export async function fetchCategory(id: number): Promise<Category | null> {
   const { data, error } = await supabase
     .from('categories')
-    .select('*')
+    .select('*, category_tiers(*)')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error

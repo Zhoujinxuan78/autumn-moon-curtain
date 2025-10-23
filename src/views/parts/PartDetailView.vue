@@ -24,9 +24,19 @@ const images = computed(() => {
 
 const specRows = computed(() => specsToList(part.value?.specs))
 
+// 仅前台可见的档位作为质量标签
+const tier = computed(() =>
+  part.value?.tier && part.value.tier.is_visible !== false
+    ? part.value.tier
+    : null,
+)
+
 const categoryName = computed(() => {
   if (!part.value?.category_id) return '未分类'
-  return categories.value.find((c) => c.id === part.value!.category_id)?.name || '未分类'
+  return (
+    categories.value.find((c) => c.id === part.value!.category_id)?.name ||
+    '未分类'
+  )
 })
 
 onMounted(async () => {
@@ -80,6 +90,7 @@ onMounted(async () => {
 
       <div class="mt-3 flex items-center gap-2 text-xs text-gray-500">
         <van-tag plain type="primary">{{ categoryName }}</van-tag>
+        <van-tag v-if="tier" plain>{{ tier.name }}</van-tag>
         <span v-if="!part.is_published" class="text-red-500">未发布</span>
       </div>
 

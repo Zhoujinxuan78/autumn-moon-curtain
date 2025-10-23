@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { fetchProduct, fetchProductParts } from '@/api/customProducts'
+import { fetchProduct, fetchProductParts, type ProductPartRow } from '@/api/customProducts'
 import type { CustomProduct } from '@/types'
 import { formatDateTime } from '@/utils/format'
 import { getPublicUrl } from '@/api/storage'
@@ -9,7 +9,7 @@ import { getPublicUrl } from '@/api/storage'
 const route = useRoute()
 const router = useRouter()
 const product = ref<CustomProduct | null>(null)
-const relatedParts = ref<Array<{ quantity: number; part: any }>>([])
+const relatedParts = ref<ProductPartRow[]>([])
 const loading = ref(true)
 
 const images = computed(() => {
@@ -87,7 +87,14 @@ onMounted(async () => {
             />
             <div class="flex-1">
               <div class="text-sm">{{ rp.part?.name || '已删除配件' }}</div>
-              <div class="text-xs text-gray-400">数量 ×{{ rp.quantity }}</div>
+              <div class="text-xs text-gray-400">
+                数量 ×{{ rp.quantity }}
+                <span
+                  v-if="rp.part?.tier && rp.part.tier.is_visible !== false"
+                  class="ml-1"
+                  >· 档位：{{ rp.part.tier.name }}</span
+                >
+              </div>
             </div>
           </div>
         </div>
