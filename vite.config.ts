@@ -19,7 +19,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src') //  @ 指向 src 目录
     }
   },
-  base: './', // 打包路径
+  base: '/autumn-moon-curtain/', // 打包路径
   server: {
     host: '0.0.0.0',
     port: 3000, // 服务启动端口号
