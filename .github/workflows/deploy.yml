@@ -3,7 +3,7 @@ name: Deploy Vue 3 + Vite project to GitHub Pages
 on:
   push:
     branches:
-      - main # 如果你的默认分支是 master，请改为 master
+      - main
 
 jobs:
   build-and-deploy:
@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (ignore peer deps)
+        run: npm install --legacy-peer-deps
 
       - name: Build project
         run: npm run build
