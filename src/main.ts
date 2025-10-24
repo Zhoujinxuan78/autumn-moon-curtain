@@ -8,6 +8,8 @@ import setupPlugins from "@/plugins";
 import 'vant/lib/index.css';
 import { useCurrentLang } from 'vant';
 import { Popup, Button, Swipe, SwipeItem, ConfigProvider } from 'vant';
+declare const eruda: any;
+
 
 async function main() {
   const app = createApp(App);
@@ -32,7 +34,7 @@ if (import.meta.env.VUE_APP_STAGING !== "prod") {
   erudaDom.src = "https://cdnjs.cloudflare.com/ajax/libs/eruda/3.4.1/eruda.min.js";
   document.body.appendChild(erudaDom);
   erudaDom.onload = () => {
-    window.eruda.init();
+    // window.eruda.init();
   };
 }
 main();

@@ -11,12 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    copy: typeof import('./src/components/FinishedSample copy.vue')['default']
-    Desc: typeof import('./src/components/desc.vue')['default']
-    Description: typeof import('./src/components/Description.vue')['default']
     FinishedItem: typeof import('./src/components/finishedItem.vue')['default']
     FinishedSample: typeof import('./src/components/FinishedSample.vue')['default']
-    GameCoinsFaq: typeof import('./src/components/GameCoinsFaq.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     IncomeFaq: typeof import('./src/components/IncomeFaq.vue')['default']
     RechargeFaq: typeof import('./src/components/RechargeFaq.vue')['default']
