@@ -1,36 +1,56 @@
-name: Build app and deploy to Tencent
+name: GitHub Actions Build and Deploy Demo # 工作流名称
 on:
-  #监听push操作
-  push:
+  push: # 触发方式
     branches:
-      # mian分支，你也可以改成其他分支
-      - main
-jobs:
-  # 任务ID
-  build:
-    # 运行环境
-    runs-on: ubuntu-latest
-    # 步骤
-    steps:
-    # 使用别人的action
-    - uses: actions/checkout@v2
-    # 步骤名称
-    - name: npm install
-      # 步骤执行指令
-      run: npm install
-    - name: npm run build
-      run: npm run build
-    # 命名这个任务为发布Deploy
-    - name: Deploy
-      # 因为构建之后，需要把代码上传到服务器上，所以需要连接到ssh，并且做一个拷贝操作
-      uses: cross-the-world/scp-pipeline@master
-      env:
-        WELCOME: "ssh scp ssh pipelines"
-        LASTSSH: "Doing something after copying"
-      with:
-        host: ${{ secrets.USER_HOST }}
-        user: ${{ secrets.USER_NAME }}
-        pass: ${{ secrets.USER_PASS }}
-        connect_timeout: 10s
-        local: './dist/*'
-        remote: /home/www/dist
+      - master # 触发分支
+jobs: # 任务：一组步骤，按顺序执行且彼此独立
+  build-and-deploy:
+    runs-on: ubuntu-latest # 运行工作流的服务，这里我选择的是ubuntu
+    steps: # 步骤
+      - name: Checkout
+        uses: actions/checkout@v2 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
+        with:
+          persist-credentials: false
+      - name: Cache node modules # 缓存node modules加快构建速度
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.yarn
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install and Build # 拉取依赖，生成dist目录
+        run: |
+          yarn
+          yarn run build
+      - name: Deploy #  把dist目录下的文件发送到你的服务器指定目录下
+        uses: cross-the-world/scp-pipeline@master
+        env:
+          WELCOME: 'ssh scp ssh pipelines'
+          LASTSSH: 'Doing something after copying'
+        with:
+          host: ${{ secrets.TG_HOST }}
+          user: ${{ secrets.TG_USER }}
+          pass: ${{ secrets.TG_PASS }}
+          connect_timeout: 30s
+          local: './dist/*'
+          remote: /data/nginx/html
+          # 发送邮件
+      - name: Send mail ✉️
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.163.com
+          # smtp 服务器端口
+          server_port: 465
+          username: ${{secrets.MAIL_USERNAME}}
+          password: ${{secrets.MAIL_PASSWORD}}
+          subject: 构建通知
+          body: Build job of ${{github.repository}} completed ${{job.status}} ${{github.actor}}!
+          # to: 805446529@qq.com
+          # from: taozhi1010@163.com
+          content_type: text/html
+          convert_markdown: true
