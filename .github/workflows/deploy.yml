@@ -1,4 +1,4 @@
-name: Deploy Vue 3 + Vite project to GitHub Pages
+name: Build and deploy Vue 3 + Vite to GitHub Pages (main branch)
 
 on:
   push:
@@ -6,9 +6,8 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,14 +17,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies (ignore peer deps)
+      - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build project
-        run: npm run build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+      - name: Build project to /docs
+        run: npm run build:docs
