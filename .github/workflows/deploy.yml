@@ -56,7 +56,7 @@ jobs:
         run: |
           set +e
           echo "===== CREATE PROJECT =====" | tee deploy.log
-          npx wrangler pages project create curtain-showcase 2>&1 | tee -a deploy.log
+          npx wrangler pages project create curtain-showcase --production-branch main 2>&1 | tee -a deploy.log
           echo "===== DEPLOY =====" | tee -a deploy.log
           npx wrangler pages deploy dist --project-name=curtain-showcase --branch main 2>&1 | tee -a deploy.log
           echo "DEPLOY_EXIT=${PIPESTATUS[0]}" | tee -a deploy.log
