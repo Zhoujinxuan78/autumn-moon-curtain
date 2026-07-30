@@ -12,7 +12,9 @@ export default defineConfig({
     // 强制单一 Vant / Vue 实例，避免重复打包导致的符号冲突
     dedupe: ['vant', 'vue'],
   },
-  base: './', // 相对路径：部署到任意域名或子路径均可
+  // 绝对路径：配合 createWebHistory() 的 history 路由部署到 Cloudflare Pages。
+  // 若用 './'（相对路径），访问子路由(如 /admin/login)时浏览器会把 ./assets/* 解析成 /admin/assets/* → 404 → 白屏。
+  base: '/',
   build: {
     // Vant 每个组件模块顶层都执行 `const [name, bem, t] = createNamespace(...)`。
     // Rollup 做模块拼接（scope-hoisting）时不会重命名解构出的 `bem` 绑定，
