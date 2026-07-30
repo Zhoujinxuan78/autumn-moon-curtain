@@ -39,10 +39,18 @@ jobs:
           VITE_ADMIN_EMAIL: ${{ secrets.VITE_ADMIN_EMAIL }}
           VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
 
-      # 用 wrangler 直接上传 dist 到 Cloudflare Pages
+      # 先核验 Cloudflare 鉴权（token/account 不对会在这里清晰报错）
+      - name: Check Cloudflare auth
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: whoami
+
+      # 用 wrangler 直接上传 dist 到 Cloudflare Pages（--branch main 标记为生产分支）
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=curtain-showcase
+          command: pages deploy dist --project-name=curtain-showcase --branch main
