@@ -62,7 +62,7 @@ const cards = [
           class="card p-3 text-center cursor-pointer"
           @click="router.push(c.to)"
         >
-          <div class="text-2xl font-semibold" style="color: #157a6e">
+          <div class="text-2xl font-semibold" style="color: var(--curtain-primary)">
             {{ counts[c.key] }}
           </div>
           <div class="text-xs text-gray-400 mt-1">{{ c.label }}</div>

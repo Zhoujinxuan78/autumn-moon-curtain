@@ -21,7 +21,7 @@ async function onLogout() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col" style="background: #f7f8fa">
+  <div class="min-h-screen flex flex-col" style="background: transparent">
     <header
       class="sticky top-0 z-20 flex items-center justify-between px-4 h-12 bg-white border-b border-gray-100"
     >
@@ -40,8 +40,8 @@ async function onLogout() {
           v-for="l in links"
           :key="l.to"
           :to="l.to"
-          class="px-4 py-3 text-sm text-gray-600 hover:text-[#157a6e]"
-          active-class="!text-[#157a6e] bg-[#e6f2f0] font-medium"
+          class="px-4 py-3 text-sm text-gray-600 hover:text-[var(--curtain-primary)]"
+          active-class="!text-[var(--curtain-primary)] bg-[var(--curtain-primary-soft)] font-medium"
         >
           {{ l.label }}
         </router-link>

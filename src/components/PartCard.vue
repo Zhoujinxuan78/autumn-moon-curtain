@@ -26,13 +26,13 @@ const tier = computed(() =>
     <van-image :src="cover" fit="cover" width="100%" height="110" />
     <div class="px-2 py-2">
       <div class="text-sm font-medium truncate">{{ part.name }}</div>
-      <div class="mt-1 text-sm font-semibold" style="color: #157a6e">
+      <div class="mt-1 text-sm font-semibold" style="color: var(--curtain-primary)">
         {{ formatPrice(start.price, start.price_unit) }}
       </div>
       <div v-if="tier" class="mt-1.5 flex flex-wrap gap-1">
         <span
           class="text-[10px] px-1.5 py-0.5 rounded-full"
-          style="background: rgba(21, 122, 110, 0.1); color: #157a6e"
+          style="background: var(--curtain-primary-soft); color: var(--curtain-primary-dark)"
         >
           {{ tier.name }}
         </span>

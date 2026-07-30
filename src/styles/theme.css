@@ -1,41 +1,128 @@
 :root {
-  /* 窗帘品牌色：沉稳墨绿 + 暖金点缀 */
-  --curtain-primary: #157a6e;
-  --curtain-primary-dark: #0f5a50;
-  --curtain-accent: #c9a24b;
-  --curtain-bg: #f7f8fa;
+  /* ===== 帘语 · 暖色窗帘主题（有机自然 / 柔和暖调）=====
+     设计意图：窗帘是家居软装，用赤陶、奶油、暖金与鼠尾草绿的低饱和暖色系，
+     搭配布艺颗粒纹理与顶部柔光，营造「布艺精品店」的温润优雅感。 */
+  --curtain-primary: #b5683f; /* 赤陶 / 陶土主色 */
+  --curtain-primary-dark: #8f4f2e; /* 深陶土，用于文字/描边 */
+  --curtain-primary-soft: #f2e2d6; /* 浅陶土底，选中/悬停态 */
+  --curtain-accent: #c9a24b; /* 暖金点缀 */
+  --curtain-bg: #faf4ea; /* 奶油底 */
+  --curtain-bg-soft: #f1e7d6; /* 沙色 */
+  --curtain-surface: #fffdf9; /* 卡片暖白 */
+  --curtain-ink: #3a2c22; /* 浓咖文字 */
+  --curtain-ink-soft: #7a6757; /* 次级文字 */
+  --curtain-sage: #8a8b6c; /* 鼠尾草绿（辅助） */
+  --curtain-line: #e9ddc9; /* 暖描边 */
 
-  /* 同步到 Vant 主题变量 */
-  --van-primary-color: #157a6e;
-  --van-primary-color-light: #e6f2f0;
+  --curtain-font-serif: "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  --curtain-font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "微软雅黑", sans-serif;
+
+  /* 同步到 Vant 4 主题变量（Vant 优先读取这些 token） */
+  --van-primary-color: #b5683f;
+  --van-primary-color-light: #f2e2d6;
 }
 
 html,
 body {
-  background: var(--curtain-bg);
-  color: #1f2329;
+  background-color: var(--curtain-bg);
+  color: var(--curtain-ink);
+  font-family: var(--curtain-font-sans);
+  /* 布艺纹理 + 柔光：顶部暖金光晕 + 右上赤陶光晕 + 细腻颗粒噪点 */
+  background-image:
+    radial-gradient(1100px 520px at 50% -8%, rgba(201, 162, 75, 0.14), transparent 60%),
+    radial-gradient(900px 460px at 100% 0%, rgba(181, 104, 63, 0.09), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-attachment: fixed;
 }
 
-/* 页面通用容器（750 设计稿下的内边距，px 会被转成 vw） */
+/* 页面通用容器 */
 .page-pad {
   padding: 16px;
 }
 
-/* 区块卡片 */
+/* 区块卡片：暖白 + 柔影 + 暖描边 */
 .card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  background: var(--curtain-surface);
+  border: 1px solid var(--curtain-line);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px -14px rgba(58, 44, 34, 0.28);
 }
 
-/* 品牌标题渐变文字 */
+/* 品牌标题：衬线 + 主色 */
 .brand-text {
+  color: var(--curtain-primary);
+  font-family: var(--curtain-font-serif);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 标题衬线体（用于首页主视觉、区块标题等） */
+.display-serif {
+  font-family: var(--curtain-font-serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* 价格文字 */
+.price-text {
   color: var(--curtain-primary);
   font-weight: 600;
 }
 
-/* 让 Vant 图片默认圆角 */
+/* 档位徽标 */
+.tier-badge {
+  background: var(--curtain-primary-soft);
+  color: var(--curtain-primary-dark);
+}
+
+/* 选中的筛选 chip */
+.chip-active {
+  background: var(--curtain-primary);
+  color: #fff;
+  border-color: var(--curtain-primary);
+}
+
+/* Vant 图片暖圆角 */
 .van-image {
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
+}
+
+/* ===== 记忆点：帘幕轻启入场动画 =====
+   页面切换时如窗帘自中央向两侧拉开，透出柔光（clip-path 自中线 inset 张开）。 */
+.drape-enter-active {
+  animation: drape-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.drape-leave-active {
+  animation: drape-out 0.28s ease both;
+}
+@keyframes drape-in {
+  0% {
+    clip-path: inset(0 50% 0 50%);
+    opacity: 0;
+    transform: scale(1.015);
+    filter: saturate(1.25);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: scale(1);
+    filter: none;
+  }
+}
+@keyframes drape-out {
+  to {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drape-enter-active,
+  .drape-leave-active {
+    animation: none;
+  }
 }

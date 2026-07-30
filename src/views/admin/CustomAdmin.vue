@@ -254,7 +254,7 @@ async function onDelete(p: CustomProduct) {
             <span
               v-if="p.tier"
               class="text-[10px] px-1.5 py-0.5 rounded-full"
-              style="background: rgba(21, 122, 110, 0.1); color: #157a6e"
+              style="background: var(--curtain-primary-soft); color: var(--curtain-primary-dark)"
             >
               {{ p.tier.name }}
             </span>

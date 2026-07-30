@@ -78,13 +78,13 @@ onMounted(async () => {
           :key="i"
           :src="img"
           class="w-16 h-16 rounded object-cover shrink-0 cursor-pointer"
-          :style="img === activeImg ? 'border:2px solid #157a6e' : ''"
+          :style="img === activeImg ? 'border:2px solid var(--curtain-primary)' : ''"
           @click="activeImg = img"
         />
       </div>
 
       <h2 class="mt-3 text-lg font-semibold">{{ part.name }}</h2>
-      <div class="mt-1 text-base font-semibold" style="color: #157a6e">
+      <div class="mt-1 text-base font-semibold" style="color: var(--curtain-primary)">
         {{ formatPrice(part.price, part.price_unit) }}
       </div>
 

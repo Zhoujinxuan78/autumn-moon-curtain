@@ -3,7 +3,7 @@ import AppHeader from '@/components/AppHeader.vue'
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col" style="background: #f7f8fa">
+  <div class="min-h-screen flex flex-col" style="background: transparent">
     <AppHeader />
     <main class="flex-1" style="padding-bottom: 56px">
       <router-view />

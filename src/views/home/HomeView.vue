@@ -23,16 +23,16 @@ const entries = [
     <!-- 品牌主视觉 -->
     <section
       class="rounded-xl p-6 text-white"
-      style="background: linear-gradient(135deg, #157a6e, #0f5a50)"
+      style="background: linear-gradient(150deg, #cf9a6a 0%, #b5683f 55%, #8f4f2e 100%)"
     >
-      <h1 class="text-2xl font-semibold">秋月窗帘</h1>
+      <h1 class="text-2xl font-semibold display-serif">秋月窗帘</h1>
       <p class="mt-2 text-sm opacity-90">
         专注窗帘配件与定制落地，看得见的专业。
       </p>
       <van-button
         class="mt-4"
         round
-        type="warning"
+        type="primary"
         @click="router.push('/parts')"
       >
         浏览配件
@@ -47,7 +47,7 @@ const entries = [
         class="card flex items-center gap-3 p-4 cursor-pointer"
         @click="router.push(e.to)"
       >
-        <van-icon :name="e.icon" size="28" color="#157a6e" />
+        <van-icon :name="e.icon" size="28" color="#b5683f" />
         <div class="flex-1">
           <div class="font-medium">{{ e.title }}</div>
           <div class="text-xs text-gray-400 mt-0.5">{{ e.desc }}</div>

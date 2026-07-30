@@ -47,7 +47,7 @@ onMounted(async () => {
     <van-loading v-if="loading" class="block mx-auto mt-10" />
 
     <template v-else-if="product">
-      <van-swipe v-if="images.length" :autoplay="0" indicator-color="#157a6e">
+      <van-swipe v-if="images.length" :autoplay="0" indicator-color="#b5683f">
         <van-swipe-item v-for="(img, i) in images" :key="i">
           <van-image :src="img" fit="cover" width="100%" height="260" />
         </van-swipe-item>

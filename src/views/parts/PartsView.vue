@@ -59,8 +59,8 @@ const list = computed(() => {
           class="shrink-0 text-xs px-3 py-1 rounded-full cursor-pointer"
           :style="
             selectedTier === 'all'
-              ? 'background:#157a6e;color:#fff'
-              : 'background:#f0f0f0;color:#555'
+              ? 'background:var(--curtain-primary);color:#fff'
+              : 'background:var(--curtain-bg-soft);color:var(--curtain-ink-soft)'
           "
           @click="selectedTier = 'all'"
         >
@@ -72,8 +72,8 @@ const list = computed(() => {
           class="shrink-0 text-xs px-3 py-1 rounded-full cursor-pointer"
           :style="
             selectedTier === t.id
-              ? 'background:#157a6e;color:#fff'
-              : 'background:#f0f0f0;color:#555'
+              ? 'background:var(--curtain-primary);color:#fff'
+              : 'background:var(--curtain-bg-soft);color:var(--curtain-ink-soft)'
           "
           @click="selectedTier = t.id"
         >
