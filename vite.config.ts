@@ -16,25 +16,10 @@ export default defineConfig({
   // 若用 './'（相对路径），访问子路由(如 /admin/login)时浏览器会把 ./assets/* 解析成 /admin/assets/* → 404 → 白屏。
   base: '/',
   build: {
-    // Vant 每个组件模块顶层都执行 `const [name, bem, t] = createNamespace(...)`。
-    // Rollup 做模块拼接（scope-hoisting）时不会重命名解构出的 `bem` 绑定，
-    // 一旦同一个 chunk 内出现 2 个以上 Vant 组件就会报
-    // "The symbol 'bem' has already been declared"。
-    // 解决办法：按 vant/es/<组件> 目录把每个组件拆成独立 chunk，
-    // 保证任何输出块内最多只有一个 createNamespace 顶层声明，冲突自然消失。
-    rollupOptions: {
-      output: {
-        manualChunks(id: string) {
-          if (!id.includes('node_modules')) return
-          if (id.includes('@supabase')) return 'supabase'
-          if (/node_modules\/(vue|vue-router|pinia|@vue)\//.test(id)) return 'vue'
-          if (id.includes('node_modules/vant/es')) {
-            const m = id.match(/node_modules\/vant\/es\/([^/]+)/)
-            return m ? `vant-${m[1]}` : 'vant-misc'
-          }
-        },
-      },
-    },
+    // 不要手动把 Vant 拆成「每组件一个 chunk」：Vant 组件之间存在循环依赖
+    // （picker-group ↔ picker），拆分成独立 chunk 会让 Rollup 在运行时产生
+    // TDZ（Cannot access 'X' before initialization）崩溃导致白屏。
+    // 使用 Vite 默认打包即可（dev 模式一直正常，证明默认处理对 Vant 是正确的）。
   },
   server: {
     host: '0.0.0.0',
