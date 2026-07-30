@@ -1,40 +1,26 @@
-import { createApp } from "vue";
-import "@/styles/reset.scss";
-import "@/styles/style.css";
-import App from "./App.vue";
-import setupPlugins from "@/plugins";
-// import { getLanguageCode } from "@mono/bridge";
-// import { useGlobalStore } from "./store";
-import 'vant/lib/index.css';
-import { useCurrentLang } from 'vant';
-import { Popup, Button, Swipe, SwipeItem, ConfigProvider } from 'vant';
-declare const eruda: any;
-
+import { createApp } from 'vue'
+import '@/styles/reset.scss'
+import '@/styles/style.css'
+import '@/styles/theme.css'
+import 'vant/lib/index.css'
+import App from './App.vue'
+import setupPlugins from '@/plugins'
+import { useUserStore } from '@/stores/user'
 
 async function main() {
-  const app = createApp(App);
-  app.use(setupPlugins);
-  app.use(Popup);
-  app.use(Button);
-  app.use(Swipe);
-  app.use(SwipeItem);
-  app.use(ConfigProvider);
-  const lang = (useCurrentLang().value) as string;
-  // useGlobalStore().setAppName(lang);
-  if (lang == "ar" || lang == "ur" || lang === 'fa') {
-    document.documentElement.setAttribute("dir", "rtl");
-  } else {
-    document.documentElement.setAttribute("dir", "ltr");
+  const app = createApp(App)
+  app.use(setupPlugins)
+
+  // 恢复登录态后再挂载，保证路由守卫能拿到用户角色
+  const userStore = useUserStore()
+  try {
+    await userStore.init()
+  } catch (err) {
+    // 即使会话初始化失败（例如数据库未连接），也保证应用挂载，避免白屏
+    console.error('[app] 初始化用户会话失败，但继续挂载应用：', err)
   }
-  // 注册插件
-  app.mount("#app");
+
+  app.mount('#app')
 }
-if (import.meta.env.VUE_APP_STAGING !== "prod") {
-  const erudaDom = document.createElement("script");
-  erudaDom.src = "https://cdnjs.cloudflare.com/ajax/libs/eruda/3.4.1/eruda.min.js";
-  document.body.appendChild(erudaDom);
-  erudaDom.onload = () => {
-    // window.eruda.init();
-  };
-}
-main();
+
+main()

@@ -3,7 +3,7 @@ export default {
     tailwindcss: {},
     autoprefixer: {},
     "postcss-px-to-viewport-8-plugin": {
-      viewportWidth: 750,
+      viewportWidth: 375,
     },
   },
 }

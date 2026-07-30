@@ -1,0 +1,41 @@
+:root {
+  /* 窗帘品牌色：沉稳墨绿 + 暖金点缀 */
+  --curtain-primary: #157a6e;
+  --curtain-primary-dark: #0f5a50;
+  --curtain-accent: #c9a24b;
+  --curtain-bg: #f7f8fa;
+
+  /* 同步到 Vant 主题变量 */
+  --van-primary-color: #157a6e;
+  --van-primary-color-light: #e6f2f0;
+}
+
+html,
+body {
+  background: var(--curtain-bg);
+  color: #1f2329;
+}
+
+/* 页面通用容器（750 设计稿下的内边距，px 会被转成 vw） */
+.page-pad {
+  padding: 16px;
+}
+
+/* 区块卡片 */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* 品牌标题渐变文字 */
+.brand-text {
+  color: var(--curtain-primary);
+  font-weight: 600;
+}
+
+/* 让 Vant 图片默认圆角 */
+.van-image {
+  border-radius: 8px;
+  overflow: hidden;
+}

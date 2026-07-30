@@ -1,58 +1,116 @@
-import type { App } from "vue";
-import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
-const Layout = () => import("@/layout/Layout.vue");
-// 静态路由
-export const constantRoutes: RouteRecordRaw[] = [
+import type { App } from 'vue'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+} from 'vue-router'
+import { useUserStore } from '@/stores/user'
+
+const DefaultLayout = () => import('@/layouts/DefaultLayout.vue')
+const AdminLayout = () => import('@/layouts/AdminLayout.vue')
+
+export const routes: RouteRecordRaw[] = [
   {
-    path: "/",
-    component: Layout,
-    redirect: "/index",
+    path: '/',
+    component: DefaultLayout,
+    redirect: '/home',
     children: [
       {
-        path: "index",
-        name: "index",
-        meta: {
-          keepAlive: true,
-          title: "Recharge",
-        },
-        component: () => import("@/views/index.vue"),
+        path: 'home',
+        name: 'home',
+        component: () => import('@/views/home/HomeView.vue'),
+        meta: { title: '首页' },
       },
       {
-        path: "descriptions",
-        name: "descriptions",
-        meta: {
-          keepAlive: true,
-        },
-        component: () => import("@/views/Description.vue"),
+        path: 'parts',
+        name: 'parts',
+        component: () => import('@/views/parts/PartsView.vue'),
+        meta: { title: '零配件' },
+      },
+      {
+        path: 'parts/:id',
+        name: 'part-detail',
+        component: () => import('@/views/parts/PartDetailView.vue'),
+        meta: { title: '配件详情' },
+      },
+      {
+        path: 'custom',
+        name: 'custom',
+        component: () => import('@/views/custom/CustomView.vue'),
+        meta: { title: '定制案例' },
+      },
+      {
+        path: 'custom/:id',
+        name: 'custom-detail',
+        component: () => import('@/views/custom/CustomDetailView.vue'),
+        meta: { title: '案例详情' },
+      },
+      {
+        path: 'admin/login',
+        name: 'admin-login',
+        component: () => import('@/views/admin/LoginView.vue'),
+        meta: { title: '管理员登录' },
       },
     ],
   },
-  // {
-  //   // 匹配不到时跳转到首页
-  //   path: "/:pathMatch(.*)*",
-  //   redirect: "/index",
-  // },
-];
+  {
+    path: '/admin',
+    component: AdminLayout,
+    redirect: '/admin/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
+        component: () => import('@/views/admin/DashboardView.vue'),
+        meta: { title: '管理后台', requiresAdmin: true },
+      },
+      {
+        path: 'categories',
+        name: 'admin-categories',
+        component: () => import('@/views/admin/CategoriesAdmin.vue'),
+        meta: { title: '分类管理', requiresAdmin: true },
+      },
+      {
+        path: 'parts',
+        name: 'admin-parts',
+        component: () => import('@/views/admin/PartsAdmin.vue'),
+        meta: { title: '配件管理', requiresAdmin: true },
+      },
+      {
+        path: 'products',
+        name: 'admin-products',
+        component: () => import('@/views/admin/CustomAdmin.vue'),
+        meta: { title: '定制案例管理', requiresAdmin: true },
+      },
+    ],
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/home',
+  },
+]
 
-/**
- * 创建路由
- */
 const router = createRouter({
   history: createWebHistory(),
-  routes: constantRoutes,
-  scrollBehavior(to, from, savedPosition) {
-    // 如果有缓存位置就恢复，否则保持当前位置
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return false   //返回 false 表示保持当前滚动，不会回到头图
+  routes,
+  scrollBehavior() {
+    return { top: 0 }
+  },
+})
+
+// 路由守卫：管理后台需要管理员权限
+router.beforeEach((to) => {
+  if (to.meta.requiresAdmin) {
+    const userStore = useUserStore()
+    if (!userStore.isAdmin) {
+      return { path: '/admin/login', query: { redirect: to.fullPath } }
     }
   }
-});
+  return true
+})
 
-// 全局注册 router
 export function setupRouter(app: App<Element>) {
-  app.use(router);
+  app.use(router)
 }
 
-export default router;
+export default router

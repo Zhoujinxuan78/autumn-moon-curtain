@@ -5,44 +5,36 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# 同一时间只跑一个部署，避免并发覆盖
-concurrency:
-  group: deploy-cloudflare-pages
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
 
-      # 构建时把环境变量注入（VITE_ 前缀会被 Vite 打进前端包）
       - name: Build
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_BUCKET: ${{ secrets.VITE_SUPABASE_BUCKET }}
-          VITE_ADMIN_EMAIL: ${{ secrets.VITE_ADMIN_EMAIL }}
-          VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
 
-      # 用 wrangler 直接上传 dist 到 Cloudflare Pages
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=curtain-showcase
+          projectName: curtain-showcase
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
