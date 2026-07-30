@@ -46,24 +46,19 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler whoami 2>&1 | tee auth.log
 
-      # 新版 wrangler(>=4) 不会在 deploy 时自动建项目，必须先显式创建（已存在则容忍报错）
-      - name: Create Pages project (if missing)
-        continue-on-error: true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler pages project create curtain-showcase --branch main 2>&1 | tee create.log
-
-      # 用 wrangler 直接上传 dist 到 Cloudflare Pages
-      # 完整输出写入 deploy.log 并作为 artifact 上传，便于排查（--branch main 标记为生产分支）
-      - name: Deploy to Cloudflare Pages
+      # 合并一步：先建项目（新版 wrangler 不会自动建），再部署。
+      # 全部输出写入 deploy.log 并上传 artifact，便于排查；create 失败(已存在)容错。
+      - name: Create + Deploy to Cloudflare Pages
         continue-on-error: true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set +e
-          npx wrangler pages deploy dist --project-name=curtain-showcase --branch main 2>&1 | tee deploy.log
+          echo "===== CREATE PROJECT =====" | tee deploy.log
+          npx wrangler pages project create curtain-showcase 2>&1 | tee -a deploy.log
+          echo "===== DEPLOY =====" | tee -a deploy.log
+          npx wrangler pages deploy dist --project-name=curtain-showcase --branch main 2>&1 | tee -a deploy.log
           echo "DEPLOY_EXIT=${PIPESTATUS[0]}" | tee -a deploy.log
 
       - name: Upload deploy log
