@@ -46,6 +46,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler whoami 2>&1 | tee auth.log
 
+      # 新版 wrangler(>=4) 不会在 deploy 时自动建项目，必须先显式创建（已存在则容忍报错）
+      - name: Create Pages project (if missing)
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler pages project create curtain-showcase --branch main 2>&1 | tee create.log
+
       # 用 wrangler 直接上传 dist 到 Cloudflare Pages
       # 完整输出写入 deploy.log 并作为 artifact 上传，便于排查（--branch main 标记为生产分支）
       - name: Deploy to Cloudflare Pages
