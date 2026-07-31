@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchProduct, fetchProductParts, type ProductPartRow } from '@/api/customProducts'
 import type { CustomProduct } from '@/types'
 import { formatDateTime } from '@/utils/format'
-import { getPublicUrl } from '@/api/storage'
+import { getPublicUrl, getThumbUrl } from '@/api/storage'
 import { showImagePreview } from 'vant'
 
 const route = useRoute()
@@ -18,7 +18,7 @@ const images = computed(() => {
   const arr = []
   if (product.value.cover_url) arr.push(product.value.cover_url)
   if (Array.isArray(product.value.image_urls)) arr.push(...product.value.image_urls)
-  return arr.map((p) => getPublicUrl(p))
+  return arr.map((p) => getThumbUrl(p, 800, 75))
 })
 
 function previewProduct(index: number) {
@@ -64,6 +64,7 @@ onMounted(async () => {
             fit="contain"
             width="100%"
             height="260"
+            lazy-load
             style="background: var(--curtain-bg)"
             class="cursor-pointer"
             @click="previewProduct(i)"
@@ -99,10 +100,11 @@ onMounted(async () => {
             @click="openPart(rp.part?.id)"
           >
             <van-image
-              :src="getPublicUrl(rp.part?.image_url)"
+              :src="getThumbUrl(rp.part?.image_url, 120, 70)"
               width="48"
               height="48"
               radius="6"
+              lazy-load
               fit="contain"
               style="background: var(--curtain-bg)"
             />

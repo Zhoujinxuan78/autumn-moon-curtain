@@ -5,7 +5,7 @@ import { fetchPart } from '@/api/parts'
 import { fetchCategories } from '@/api/categories'
 import type { Part, Category } from '@/types'
 import { formatPrice, specsToList } from '@/utils/format'
-import { getPublicUrl } from '@/api/storage'
+import { getPublicUrl, getThumbUrl } from '@/api/storage'
 import { showImagePreview } from 'vant'
 
 const route = useRoute()
@@ -25,7 +25,7 @@ const images = computed(() => {
   const arr = []
   if (part.value.image_url) arr.push(part.value.image_url)
   if (Array.isArray(part.value.gallery)) arr.push(...part.value.gallery)
-  return arr.map((p) => getPublicUrl(p))
+  return arr.map((p) => getThumbUrl(p, 800, 75))
 })
 
 const specRows = computed(() => specsToList(part.value?.specs))
@@ -77,6 +77,7 @@ onMounted(async () => {
         width="100%"
         height="280"
         radius="12"
+        lazy-load
         style="background: var(--curtain-bg)"
         class="cursor-pointer"
         @click="previewImage(images.indexOf(activeImg))"
@@ -86,6 +87,7 @@ onMounted(async () => {
           v-for="(img, i) in images"
           :key="i"
           :src="img"
+          loading="lazy"
           class="w-16 h-16 rounded object-contain shrink-0 cursor-pointer"
           :class="img === activeImg ? 'border-2 border-[var(--curtain-primary)]' : 'border-2 border-transparent'"
           style="background: var(--curtain-bg)"
