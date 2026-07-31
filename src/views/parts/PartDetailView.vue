@@ -6,6 +6,7 @@ import { fetchCategories } from '@/api/categories'
 import type { Part, Category } from '@/types'
 import { formatPrice, specsToList } from '@/utils/format'
 import { getPublicUrl } from '@/api/storage'
+import { showImagePreview } from 'vant'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +14,11 @@ const part = ref<Part | null>(null)
 const categories = ref<Category[]>([])
 const loading = ref(true)
 const activeImg = ref('')
+
+function previewImage(index: number) {
+  if (!images.value.length) return
+  showImagePreview({ images: images.value, startPosition: index })
+}
 
 const images = computed(() => {
   if (!part.value) return []
@@ -67,18 +73,22 @@ onMounted(async () => {
     <template v-else-if="part">
       <van-image
         :src="activeImg"
-        fit="cover"
+        fit="contain"
         width="100%"
-        height="220"
+        height="280"
         radius="12"
+        style="background: var(--curtain-bg)"
+        class="cursor-pointer"
+        @click="previewImage(images.indexOf(activeImg))"
       />
       <div v-if="images.length > 1" class="flex gap-2 mt-2 overflow-x-auto">
         <img
           v-for="(img, i) in images"
           :key="i"
           :src="img"
-          class="w-16 h-16 rounded object-cover shrink-0 cursor-pointer"
-          :style="img === activeImg ? 'border:2px solid var(--curtain-primary)' : ''"
+          class="w-16 h-16 rounded object-contain shrink-0 cursor-pointer"
+          :class="img === activeImg ? 'border-2 border-[var(--curtain-primary)]' : 'border-2 border-transparent'"
+          style="background: var(--curtain-bg)"
           @click="activeImg = img"
         />
       </div>

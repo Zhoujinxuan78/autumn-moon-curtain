@@ -5,6 +5,7 @@ import { fetchProduct, fetchProductParts, type ProductPartRow } from '@/api/cust
 import type { CustomProduct } from '@/types'
 import { formatDateTime } from '@/utils/format'
 import { getPublicUrl } from '@/api/storage'
+import { showImagePreview } from 'vant'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +20,15 @@ const images = computed(() => {
   if (Array.isArray(product.value.image_urls)) arr.push(...product.value.image_urls)
   return arr.map((p) => getPublicUrl(p))
 })
+
+function previewProduct(index: number) {
+  if (!images.value.length) return
+  showImagePreview({ images: images.value, startPosition: index })
+}
+
+function openPart(id?: number) {
+  if (id) router.push(`/parts/${id}`)
+}
 
 onMounted(async () => {
   try {
@@ -49,7 +59,15 @@ onMounted(async () => {
     <template v-else-if="product">
       <van-swipe v-if="images.length" :autoplay="0" indicator-color="#b5683f">
         <van-swipe-item v-for="(img, i) in images" :key="i">
-          <van-image :src="img" fit="cover" width="100%" height="260" />
+          <van-image
+            :src="img"
+            fit="contain"
+            width="100%"
+            height="260"
+            style="background: var(--curtain-bg)"
+            class="cursor-pointer"
+            @click="previewProduct(i)"
+          />
         </van-swipe-item>
       </van-swipe>
 
@@ -77,13 +95,16 @@ onMounted(async () => {
           <div
             v-for="rp in relatedParts"
             :key="rp.part?.id"
-            class="card flex items-center gap-2 p-2 mb-2"
+            class="card flex items-center gap-2 p-2 mb-2 cursor-pointer"
+            @click="openPart(rp.part?.id)"
           >
             <van-image
               :src="getPublicUrl(rp.part?.image_url)"
               width="48"
               height="48"
               radius="6"
+              fit="contain"
+              style="background: var(--curtain-bg)"
             />
             <div class="flex-1">
               <div class="text-sm">{{ rp.part?.name || '已删除配件' }}</div>
@@ -96,6 +117,7 @@ onMounted(async () => {
                 >
               </div>
             </div>
+            <van-icon name="arrow" class="text-gray-300 shrink-0" />
           </div>
         </div>
       </div>

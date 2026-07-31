@@ -36,10 +36,11 @@ const visibleTiers = computed<CategoryTier[]>(() =>
 watch(selected, () => (selectedTier.value = 'all'))
 
 const list = computed(() => {
-  let arr =
-    selected.value === 'all'
-      ? parts.value
-      : parts.value.filter((p) => p.category_id === selected.value)
+  // 隐藏档位：连带隐藏该档位下的零件（仅前台；无档位或档位可见的零件照常展示）
+  let arr = parts.value.filter((p) => !p.tier || p.tier.is_visible !== false)
+  if (selected.value !== 'all') {
+    arr = arr.filter((p) => p.category_id === selected.value)
+  }
   if (selectedTier.value !== 'all') {
     arr = arr.filter((p) => p.tier_id === selectedTier.value)
   }
