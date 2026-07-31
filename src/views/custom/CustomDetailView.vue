@@ -57,7 +57,7 @@ onMounted(async () => {
     <van-loading v-if="loading" class="block mx-auto mt-10" />
 
     <template v-else-if="product">
-      <van-swipe v-if="images.length" :autoplay="0" indicator-color="#b5683f">
+      <van-swipe v-if="images.length" :autoplay="0">
         <van-swipe-item v-for="(img, i) in images" :key="i">
           <van-image
             :src="img"
@@ -69,6 +69,16 @@ onMounted(async () => {
             @click="previewProduct(i)"
           />
         </van-swipe-item>
+        <template #indicator="{ active, total }">
+          <div class="swipe-indicator">
+            <span
+              v-for="n in total"
+              :key="n"
+              class="swipe-dot"
+              :class="{ 'swipe-dot--active': active === n - 1 }"
+            />
+          </div>
+        </template>
       </van-swipe>
 
       <div class="page-pad">
@@ -126,3 +136,33 @@ onMounted(async () => {
     <EmptyState v-else text="未找到该案例" />
   </div>
 </template>
+
+<style scoped>
+/* 案例轮播指示器：底部居中胶囊条，深色半透明底 + 浅色圆点，在浅色图片/奶油底上都清晰可见 */
+.swipe-indicator {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(58, 44, 34, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.swipe-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+.swipe-dot--active {
+  width: 18px;
+  background: #f2e2d6;
+}
+</style>
