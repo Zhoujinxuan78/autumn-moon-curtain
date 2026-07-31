@@ -77,7 +77,6 @@ onMounted(async () => {
         width="100%"
         height="280"
         radius="12"
-        lazy-load
         style="background: var(--curtain-bg)"
         class="cursor-pointer"
         @click="previewImage(images.indexOf(activeImg))"

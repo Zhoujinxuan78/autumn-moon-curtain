@@ -39,9 +39,9 @@ export function getPublicUrl(path: string | null | undefined): string {
 }
 
 /**
- * 缩略图 URL。
- * 注意：图片在上传时已完成压缩，这里直接返回原图公开 URL（保持签名兼容，width/quality 不再使用）。
- * 性能优化通过 van-image 的 lazy-load 实现，而非二次压缩。
+ * 缩略图 URL（兼容旧调用签名，保留 width/quality 形参但不再使用）。
+ * 图片在上传时已完成压缩，这里直接返回原图公开 URL，前端不再做二次压缩/变换。
+ * 注意：曾用 van-image 的 lazy-load 做懒加载，但部署环境下 IntersectionObserver 不触发导致图片空白，已移除。
  */
 export function getThumbUrl(
   path: string | null | undefined,

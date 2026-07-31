@@ -18,7 +18,7 @@ const cover = computed(() => {
     class="card overflow-hidden cursor-pointer"
     @click="router.push(`/custom/${product.id}`)"
   >
-    <van-image :src="cover" fit="cover" width="100%" height="130" lazy-load />
+    <van-image :src="cover" fit="cover" width="100%" height="130" />
     <div class="px-2 py-2">
       <div class="text-sm font-medium truncate">{{ product.title }}</div>
       <div class="mt-1 flex items-center justify-between text-xs text-gray-400">

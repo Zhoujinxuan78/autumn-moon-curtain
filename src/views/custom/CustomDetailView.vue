@@ -64,7 +64,6 @@ onMounted(async () => {
             fit="contain"
             width="100%"
             height="260"
-            lazy-load
             style="background: var(--curtain-bg)"
             class="cursor-pointer"
             @click="previewProduct(i)"
@@ -104,7 +103,6 @@ onMounted(async () => {
               width="48"
               height="48"
               radius="6"
-              lazy-load
               fit="contain"
               style="background: var(--curtain-bg)"
             />

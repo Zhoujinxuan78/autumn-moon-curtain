@@ -23,7 +23,7 @@ const tier = computed(() =>
     class="card overflow-hidden cursor-pointer"
     @click="router.push(`/parts/${part.id}`)"
   >
-    <van-image :src="cover" fit="cover" width="100%" height="110" lazy-load />
+    <van-image :src="cover" fit="cover" width="100%" height="110" />
     <div class="px-2 py-2">
       <div class="text-sm font-medium truncate">{{ part.name }}</div>
       <div class="mt-1 text-sm font-semibold" style="color: var(--curtain-primary)">
