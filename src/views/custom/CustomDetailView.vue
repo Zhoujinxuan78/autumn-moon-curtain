@@ -57,80 +57,87 @@ onMounted(async () => {
     <van-loading v-if="loading" class="block mx-auto mt-10" />
 
     <template v-else-if="product">
-      <van-swipe v-if="images.length" :autoplay="0">
-        <van-swipe-item v-for="(img, i) in images" :key="i">
-          <van-image
-            :src="img"
-            fit="contain"
-            width="100%"
-            height="260"
-            style="background: var(--curtain-bg)"
-            class="cursor-pointer"
-            @click="previewProduct(i)"
-          />
-        </van-swipe-item>
-        <template #indicator="{ active, total }">
-          <div class="swipe-indicator">
-            <span
-              v-for="n in total"
-              :key="n"
-              class="swipe-dot"
-              :class="{ 'swipe-dot--active': active === n - 1 }"
+      <!-- 轮播：完整展示不裁切 -->
+      <div v-if="images.length" class="swipe-wrap">
+        <van-swipe :autoplay="0">
+          <van-swipe-item v-for="(img, i) in images" :key="i">
+            <van-image
+              :src="img"
+              fit="contain"
+              width="100%"
+              height="300"
+              style="background: var(--curtain-bg)"
+              class="cursor-pointer"
+              @click="previewProduct(i)"
             />
-          </div>
-        </template>
-      </van-swipe>
+          </van-swipe-item>
+          <template #indicator="{ active, total }">
+            <div class="swipe-indicator">
+              <span
+                v-for="n in total"
+                :key="n"
+                class="swipe-dot"
+                :class="{ 'swipe-dot--active': active === n - 1 }"
+              />
+            </div>
+          </template>
+        </van-swipe>
+        <span class="swipe-count">{{ images.length }} 图</span>
+      </div>
 
       <div class="page-pad">
-        <h2 class="text-lg font-semibold">{{ product.title }}</h2>
-        <div class="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
-          <span v-if="product.location">
-            <van-icon name="location-o" /> {{ product.location }}
+        <h2 class="display-serif case-title">{{ product.title }}</h2>
+
+        <div class="meta-row">
+          <span v-if="product.location" class="meta-pill">
+            <van-icon name="location-o" />{{ product.location }}
           </span>
-          <span v-if="product.customer_name">
-            <van-icon name="user-o" /> {{ product.customer_name }}
+          <span v-if="product.customer_name" class="meta-pill meta-pill--accent">
+            <van-icon name="user-o" />{{ product.customer_name }}
           </span>
-          <span>{{ formatDateTime(product.created_at).slice(0, 10) }}</span>
-          <span v-if="product.visible_date">
-            定时: {{ formatDateTime(product.visible_date) }}
+          <span class="meta-pill">
+            <van-icon name="calendar-o" />{{ formatDateTime(product.created_at).slice(0, 10) }}
+          </span>
+          <span v-if="product.visible_date" class="meta-pill meta-pill--soft">
+            定时 {{ formatDateTime(product.visible_date).slice(0, 10) }}
           </span>
         </div>
 
-        <p
-          v-if="product.description"
-          class="mt-3 text-sm text-gray-600 leading-6"
-        >
-          {{ product.description }}
-        </p>
+        <div v-if="product.description" class="desc-card">
+          <p class="desc-text">{{ product.description }}</p>
+        </div>
 
-        <div v-if="relatedParts.length" class="mt-4">
-          <div class="text-sm font-medium mb-2">所用配件</div>
+        <div v-if="relatedParts.length" class="parts">
+          <div class="section-head">
+            <span class="section-title">所用配件</span>
+            <span class="section-count">{{ relatedParts.length }}</span>
+          </div>
           <div
             v-for="rp in relatedParts"
             :key="rp.part?.id"
-            class="card flex items-center gap-2 p-2 mb-2 cursor-pointer"
+            class="part-row card"
             @click="openPart(rp.part?.id)"
           >
             <van-image
               :src="getThumbUrl(rp.part?.image_url, 120, 70)"
-              width="48"
-              height="48"
-              radius="6"
+              width="52"
+              height="52"
+              radius="10"
               fit="contain"
               style="background: var(--curtain-bg)"
             />
-            <div class="flex-1">
-              <div class="text-sm">{{ rp.part?.name || '已删除配件' }}</div>
-              <div class="text-xs text-gray-400">
-                数量 ×{{ rp.quantity }}
+            <div class="part-info">
+              <div class="part-name">{{ rp.part?.name || '已删除配件' }}</div>
+              <div class="part-sub">
+                <span>数量 ×{{ rp.quantity }}</span>
                 <span
                   v-if="rp.part?.tier && rp.part.tier.is_visible !== false"
-                  class="ml-1"
-                  >· 档位：{{ rp.part.tier.name }}</span
+                  class="tier-tag"
+                  >{{ rp.part.tier.name }}</span
                 >
               </div>
             </div>
-            <van-icon name="arrow" class="text-gray-300 shrink-0" />
+            <van-icon name="arrow" class="part-arrow" />
           </div>
         </div>
       </div>
@@ -141,7 +148,30 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* 案例轮播指示器：底部居中胶囊条，深色半透明底 + 浅色圆点，在浅色图片/奶油底上都清晰可见 */
+/* 轮播容器：圆角 + 暖描边 */
+.swipe-wrap {
+  position: relative;
+  margin: 12px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--curtain-line);
+  box-shadow: 0 12px 30px -20px rgba(58, 44, 34, 0.4);
+}
+.swipe-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  font-size: 11px;
+  color: #fff;
+  background: rgba(58, 44, 34, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+/* 案例轮播指示器：底部居中胶囊条 */
 .swipe-indicator {
   position: absolute;
   bottom: 10px;
@@ -167,5 +197,133 @@ onMounted(async () => {
 .swipe-dot--active {
   width: 18px;
   background: #f2e2d6;
+}
+
+/* 标题 */
+.case-title {
+  font-size: 23px;
+  line-height: 1.35;
+  color: var(--curtain-ink);
+  margin: 4px 0 0;
+}
+
+/* 元信息胶囊 */
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--curtain-ink-soft);
+  background: var(--curtain-bg-soft);
+  border: 1px solid var(--curtain-line);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+.meta-pill--accent {
+  color: #fff;
+  background: var(--curtain-primary);
+  border-color: var(--curtain-primary);
+}
+.meta-pill--soft {
+  color: var(--curtain-ink-soft);
+  background: transparent;
+  border-style: dashed;
+}
+.meta-pill :deep(.van-icon) {
+  font-size: 13px;
+}
+
+/* 描述卡 */
+.desc-card {
+  margin-top: 16px;
+  background: var(--curtain-surface);
+  border: 1px solid var(--curtain-line);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.desc-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--curtain-ink-soft);
+  white-space: pre-line;
+}
+
+/* 所用配件 */
+.parts {
+  margin-top: 22px;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--curtain-ink);
+  font-family: var(--curtain-font-serif);
+}
+.section-count {
+  font-size: 12px;
+  color: #fff;
+  background: var(--curtain-primary);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.part-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.part-row:active {
+  transform: scale(0.99);
+}
+.part-info {
+  flex: 1;
+  min-width: 0;
+}
+.part-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--curtain-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.part-sub {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--curtain-ink-soft);
+}
+.tier-tag {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--curtain-primary-soft);
+  color: var(--curtain-primary-dark);
+}
+.part-arrow {
+  color: #cbb89c;
+  flex-shrink: 0;
 }
 </style>
