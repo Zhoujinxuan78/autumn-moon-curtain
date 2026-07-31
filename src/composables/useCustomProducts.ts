@@ -7,17 +7,18 @@ import {
   updateProduct,
   deleteProduct,
   setProductParts,
+  type FetchProductsOpts,
 } from '@/api/customProducts'
 import type { CustomProduct, CustomProductInput } from '@/types'
 
-export function useCustomProducts(opts?: { publishedOnly?: boolean }) {
+export function useCustomProducts(opts?: FetchProductsOpts) {
   const products = ref<CustomProduct[]>([])
   const loading = ref(false)
 
-  async function load() {
+  async function load(filters?: FetchProductsOpts) {
     loading.value = true
     try {
-      products.value = await fetchProducts(opts)
+      products.value = await fetchProducts({ ...opts, ...filters })
     } finally {
       loading.value = false
     }

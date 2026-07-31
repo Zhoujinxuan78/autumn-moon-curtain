@@ -63,6 +63,7 @@ export interface CustomProduct {
   is_published: boolean
   visible_date: string | null
   location: string | null
+  customer_name: string | null
   created_by: string | null
   created_at: string
   updated_at: string

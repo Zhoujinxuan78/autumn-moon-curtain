@@ -87,6 +87,9 @@ onMounted(async () => {
           <span v-if="product.location">
             <van-icon name="location-o" /> {{ product.location }}
           </span>
+          <span v-if="product.customer_name">
+            <van-icon name="user-o" /> {{ product.customer_name }}
+          </span>
           <span>{{ formatDateTime(product.created_at).slice(0, 10) }}</span>
           <span v-if="product.visible_date">
             定时: {{ formatDateTime(product.visible_date) }}

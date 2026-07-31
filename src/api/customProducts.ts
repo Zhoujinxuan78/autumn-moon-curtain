@@ -6,18 +6,31 @@ export interface ProductPartRow {
   part: Part | null
 }
 
+/** 列表筛选条件：模糊搜索（名称/地址/客户名）+ 创建时间范围（yyyy-mm-dd）。 */
+export interface FetchProductsOpts {
+  publishedOnly?: boolean
+  search?: string
+  startDate?: string
+  endDate?: string
+}
+
 /**
  * 获取客户定制成品列表。
  * 非管理员仅能看到 is_published 且已过 visible_date 的成品（由 RLS 保证）。
+ * search 对 title/location/customer_name 做 ilike 模糊匹配；startDate/endDate 按 created_at 范围过滤。
  */
-export async function fetchProducts(opts?: {
-  publishedOnly?: boolean
-}): Promise<CustomProduct[]> {
-  let query = supabase
-    .from('custom_products')
-    .select('*')
-    .order('created_at', { ascending: false })
+export async function fetchProducts(opts?: FetchProductsOpts): Promise<CustomProduct[]> {
+  let query = supabase.from('custom_products').select('*')
   if (opts?.publishedOnly) query = query.eq('is_published', true)
+  if (opts?.search && opts!.search.trim()) {
+    const term = `%${opts!.search.trim()}%`
+    query = query.or(
+      `title.ilike.${term},location.ilike.${term},customer_name.ilike.${term}`,
+    )
+  }
+  if (opts?.startDate) query = query.gte('created_at', opts.startDate)
+  if (opts?.endDate) query = query.lte('created_at', `${opts.endDate}T23:59:59`)
+  query = query.order('created_at', { ascending: false })
   const { data, error } = await query
   if (error) throw error
   return (data ?? []) as CustomProduct[]

@@ -19,6 +19,7 @@ const form = ref<CustomProductInput>({
   is_published: true,
   visible_date: null,
   location: '',
+  customer_name: '',
   cover_url: '',
   image_urls: [],
 })
@@ -51,6 +52,7 @@ function resetForm() {
     is_published: true,
     visible_date: null,
     location: '',
+    customer_name: '',
     cover_url: '',
     image_urls: [],
   }
@@ -74,6 +76,7 @@ async function openEdit(p: CustomProduct) {
     is_published: p.is_published,
     visible_date: p.visible_date,
     location: p.location ?? '',
+    customer_name: p.customer_name ?? '',
     cover_url: p.cover_url ?? '',
     image_urls: Array.isArray(p.image_urls) ? p.image_urls : [],
   }
@@ -196,6 +199,7 @@ async function onDelete(p: CustomProduct) {
           <van-field v-model="form.title" label="标题" placeholder="如：现代简约客厅帘" />
           <van-field v-model="form.description" label="描述" type="textarea" rows="2" />
           <van-field v-model="form.location" label="地点" placeholder="如：广州市番禺区" />
+          <van-field v-model="form.customer_name" label="客户名" placeholder="如：王先生 / 某小区业主" />
           <van-field label="定时发布">
             <template #input>
               <input
