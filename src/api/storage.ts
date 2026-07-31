@@ -31,38 +31,24 @@ export async function uploadImages(
   return paths
 }
 
-/** 图片变换参数（Supabase Storage 图片变换）。 */
-export type ImgTransform = {
-  width?: number
-  height?: number
-  quality?: number
-  resize?: 'cover' | 'contain' | 'fill'
-  format?: 'webp' | 'jpg' | 'png' | 'avif'
-}
-
-// 是否启用 Supabase 图片变换：按显示尺寸下发缩略图，显著降低传输体积。
-// 若你的 Supabase 桶未开启「Image Transformation」导致图片 400，
-// 在项目根目录 .env 设置 VITE_IMG_TRANSFORM=false 即可回退为原图。
-const IMG_TRANSFORM_ENABLED = import.meta.env.VITE_IMG_TRANSFORM !== 'false'
-
-/** 由存储路径解析为公开访问 URL，可附图片变换参数（仅当开启时生效）。 */
-export function getPublicUrl(
-  path: string | null | undefined,
-  transform?: ImgTransform,
-): string {
+/** 由存储路径解析为公开访问 URL。上传时已压缩，直接返回原图（不再做二次变换）。 */
+export function getPublicUrl(path: string | null | undefined): string {
   if (!path) return ''
-  const opts = IMG_TRANSFORM_ENABLED && transform ? { transform } : undefined
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path, opts)
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
   return data.publicUrl
 }
 
-/** 缩略图 URL：按宽度等比裁剪为 webp（默认 400px / 质量 70），体积大幅减小。 */
+/**
+ * 缩略图 URL。
+ * 注意：图片在上传时已完成压缩，这里直接返回原图公开 URL（保持签名兼容，width/quality 不再使用）。
+ * 性能优化通过 van-image 的 lazy-load 实现，而非二次压缩。
+ */
 export function getThumbUrl(
   path: string | null | undefined,
   width = 400,
   quality = 70,
 ): string {
-  return getPublicUrl(path, { width, quality, resize: 'cover', format: 'webp' })
+  return getPublicUrl(path)
 }
 
 /** 删除存储对象（传入存储路径）。 */
