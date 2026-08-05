@@ -296,8 +296,20 @@ async function onDelete(p: CustomProduct) {
               </div>
             </template>
             <div v-for="p in g.parts" :key="p.id" class="card p-2 mb-2">
-              <div class="flex items-center justify-between">
-                <span class="text-sm">{{ p.name }}</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-sm truncate">{{ p.name }}</span>
+                <span
+                  v-if="p.tier"
+                  class="shrink-0 text-[10px] leading-none px-1.5 py-0.5 rounded-full"
+                  style="background: var(--curtain-primary-soft); color: var(--curtain-primary-dark)"
+                  >{{ p.tier.name }}</span
+                >
+                <span
+                  v-else
+                  class="shrink-0 text-[10px] leading-none px-1.5 py-0.5 rounded-full"
+                  style="background: #f3ede4; color: #b6a691; border: 1px dashed #d9cdba"
+                  >未设档位</span
+                >
               </div>
               <div class="flex items-center justify-between mt-1.5">
                 <span class="text-xs text-gray-400">
