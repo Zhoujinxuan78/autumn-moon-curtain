@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchProduct, fetchProductParts, type ProductPartRow } from '@/api/customProducts'
-import type { CustomProduct } from '@/types'
+import type { CustomProduct, CategoryTier } from '@/types'
 import { formatDateTime } from '@/utils/format'
 import { getPublicUrl, getThumbUrl } from '@/api/storage'
 import { showImagePreview } from 'vant'
@@ -29,6 +29,34 @@ function previewProduct(index: number) {
 function openPart(id?: number) {
   if (id) router.push(`/parts/${id}`)
 }
+
+// 所用配件按档位分组（隐藏档位不展示），用于详情页分组陈列
+const relatedGroups = computed(() => {
+  const visible = relatedParts.value.filter(
+    (rp) => !(rp.part?.tier && rp.part.tier.is_visible === false),
+  )
+  const map = new Map<
+    string,
+    { key: string; label: string; tier: CategoryTier | null; rows: ProductPartRow[] }
+  >()
+  for (const rp of visible) {
+    const t = rp.part?.tier ?? null
+    const key = t ? `tier-${t.id}` : 'uncat'
+    if (!map.has(key)) map.set(key, { key, label: t ? t.name : '其他配件', tier: t, rows: [] })
+    map.get(key)!.rows.push(rp)
+  }
+  const arr = Array.from(map.values())
+  arr.sort((a, b) => {
+    if (a.tier && b.tier)
+      return (a.tier.sort_order ?? 0) - (b.tier.sort_order ?? 0) || a.label.localeCompare(b.label)
+    return a.tier ? -1 : 1
+  })
+  return arr
+})
+
+const totalParts = computed(() =>
+  relatedGroups.value.reduce((s, g) => s + g.rows.length, 0),
+)
 
 onMounted(async () => {
   try {
@@ -107,38 +135,41 @@ onMounted(async () => {
           <p class="desc-text">{{ product.description }}</p>
         </div>
 
-        <div v-if="relatedParts.length" class="parts">
+        <div v-if="relatedGroups.length" class="parts">
           <div class="section-head">
             <span class="section-title">所用配件</span>
-            <span class="section-count">{{ relatedParts.length }}</span>
+            <span class="section-count">{{ totalParts }}</span>
           </div>
-          <div
-            v-for="rp in relatedParts"
-            :key="rp.part?.id"
-            class="part-row card"
-            @click="openPart(rp.part?.id)"
-          >
-            <van-image
-              :src="getThumbUrl(rp.part?.image_url, 120, 70)"
-              width="52"
-              height="52"
-              radius="10"
-              fit="contain"
-              style="background: var(--curtain-bg)"
-            />
-            <div class="part-info">
-              <div class="part-name">{{ rp.part?.name || '已删除配件' }}</div>
-              <div class="part-sub">
-                <span>数量 ×{{ rp.quantity }}</span>
-                <span
-                  v-if="rp.part?.tier && rp.part.tier.is_visible !== false"
-                  class="tier-tag"
-                  >{{ rp.part.tier.name }}</span
-                >
-              </div>
+
+          <template v-for="g in relatedGroups" :key="g.key">
+            <div class="group-head">
+              <span class="group-bar" />
+              <span class="group-name">{{ g.label }}</span>
+              <span class="group-count">{{ g.rows.length }}</span>
             </div>
-            <van-icon name="arrow" class="part-arrow" />
-          </div>
+            <div
+              v-for="rp in g.rows"
+              :key="rp.part?.id"
+              class="part-row card"
+              @click="openPart(rp.part?.id)"
+            >
+              <van-image
+                :src="getThumbUrl(rp.part?.image_url, 120, 70)"
+                width="52"
+                height="52"
+                radius="10"
+                fit="contain"
+                style="background: var(--curtain-bg)"
+              />
+              <div class="part-info">
+                <div class="part-name">{{ rp.part?.name || '已删除配件' }}</div>
+                <div class="part-sub">
+                  <span>数量 ×{{ rp.quantity }}</span>
+                </div>
+              </div>
+              <van-icon name="arrow" class="part-arrow" />
+            </div>
+          </template>
         </div>
       </div>
     </template>
@@ -315,12 +346,38 @@ onMounted(async () => {
   font-size: 12px;
   color: var(--curtain-ink-soft);
 }
-.tier-tag {
-  font-size: 10px;
-  padding: 1px 7px;
+/* 分组标题（按档位） */
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+.group-head:first-of-type {
+  margin-top: 2px;
+}
+.group-bar {
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--curtain-primary);
+}
+.group-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--curtain-ink);
+}
+.group-count {
+  font-size: 11px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
   border-radius: 999px;
   background: var(--curtain-primary-soft);
   color: var(--curtain-primary-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .part-arrow {
   color: #cbb89c;
