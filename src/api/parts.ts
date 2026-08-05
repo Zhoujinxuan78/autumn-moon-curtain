@@ -6,7 +6,7 @@ export async function fetchParts(opts?: {
   categoryId?: number | null
   publishedOnly?: boolean
 }): Promise<Part[]> {
-  let query = supabase.from('parts').select('*, tier:category_tiers(*)')
+  let query = supabase.from('parts').select('*, tier:category_tiers(*), category:categories(*)')
   if (opts?.categoryId != null) query = query.eq('category_id', opts.categoryId)
   if (opts?.publishedOnly) query = query.eq('is_published', true)
   const { data, error } = await query
@@ -23,7 +23,7 @@ export async function fetchParts(opts?: {
 export async function fetchPart(id: number): Promise<Part | null> {
   const { data, error } = await supabase
     .from('parts')
-    .select('*, tier:category_tiers(*)')
+    .select('*, tier:category_tiers(*), category:categories(*)')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error

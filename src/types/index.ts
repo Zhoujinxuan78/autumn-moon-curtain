@@ -52,6 +52,8 @@ export interface Part {
   tier_id: number | null
   // 列表/详情查询时嵌入的档位定义
   tier?: CategoryTier | null
+  // 列表/详情查询时嵌入的所属大类
+  category?: Category | null
 }
 
 export interface CustomProduct {

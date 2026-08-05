@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchProduct, fetchProductParts, type ProductPartRow } from '@/api/customProducts'
-import type { CustomProduct, CategoryTier } from '@/types'
+import type { CustomProduct, Category } from '@/types'
 import { formatDateTime } from '@/utils/format'
 import { getPublicUrl, getThumbUrl } from '@/api/storage'
 import { showImagePreview } from 'vant'
@@ -30,26 +30,26 @@ function openPart(id?: number) {
   if (id) router.push(`/parts/${id}`)
 }
 
-// 所用配件按档位分组（隐藏档位不展示），用于详情页分组陈列
+// 所用配件按大类（category）分组陈列，用于详情页分组展示
 const relatedGroups = computed(() => {
   const visible = relatedParts.value.filter(
-    (rp) => !(rp.part?.tier && rp.part.tier.is_visible === false),
+    (rp) => !(rp.part?.category && rp.part.category.is_active === false),
   )
   const map = new Map<
     string,
-    { key: string; label: string; tier: CategoryTier | null; rows: ProductPartRow[] }
+    { key: string; label: string; category: Category | null; rows: ProductPartRow[] }
   >()
   for (const rp of visible) {
-    const t = rp.part?.tier ?? null
-    const key = t ? `tier-${t.id}` : 'uncat'
-    if (!map.has(key)) map.set(key, { key, label: t ? t.name : '其他配件', tier: t, rows: [] })
+    const c = rp.part?.category ?? null
+    const key = c ? `cat-${c.id}` : 'uncat'
+    if (!map.has(key)) map.set(key, { key, label: c ? c.name : '其他配件', category: c, rows: [] })
     map.get(key)!.rows.push(rp)
   }
   const arr = Array.from(map.values())
   arr.sort((a, b) => {
-    if (a.tier && b.tier)
-      return (a.tier.sort_order ?? 0) - (b.tier.sort_order ?? 0) || a.label.localeCompare(b.label)
-    return a.tier ? -1 : 1
+    if (a.category && b.category)
+      return (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0) || a.label.localeCompare(b.label)
+    return a.category ? -1 : 1
   })
   return arr
 })

@@ -5,7 +5,7 @@ import { useCustomProducts } from '@/composables/useCustomProducts'
 import { useParts } from '@/composables/useParts'
 import ImageUploader from '@/components/ImageUploader.vue'
 import { formatPrice, formatDateTime } from '@/utils/format'
-import type { CustomProduct, CustomProductInput, Part, CategoryTier } from '@/types'
+import type { CustomProduct, CustomProductInput, Part, Category } from '@/types'
 
 const { products, load, add, update, remove, setParts } = useCustomProducts()
 const { parts } = useParts()
@@ -31,26 +31,26 @@ const visibleDateLocal = ref('')
 
 const showPartsPicker = ref(false)
 
-// 关联配件：按档位分组折叠展示（先选类别，再展开该类别下的配件）
+// 关联配件：按大类（category）分组折叠展示（先选类别，再展开该类别下的配件）
 const openTiers = ref<string[]>([])
-const tierGroups = computed(() => {
+const categoryGroups = computed(() => {
   const map = new Map<
     string,
-    { key: string; label: string; tier: CategoryTier | null; parts: Part[]; selectedCount: number }
+    { key: string; label: string; category: Category | null; parts: Part[]; selectedCount: number }
   >()
   for (const p of parts.value) {
-    const t = p.tier ?? null
-    const key = t ? `tier-${t.id}` : 'uncat'
+    const c = p.category ?? null
+    const key = c ? `cat-${c.id}` : 'uncat'
     if (!map.has(key)) {
-      map.set(key, { key, label: t ? t.name : '未分类', tier: t, parts: [], selectedCount: 0 })
+      map.set(key, { key, label: c ? c.name : '未分类', category: c, parts: [], selectedCount: 0 })
     }
     map.get(key)!.parts.push(p)
   }
   const arr = Array.from(map.values())
   arr.sort((a, b) => {
-    if (a.tier && b.tier)
-      return (a.tier.sort_order ?? 0) - (b.tier.sort_order ?? 0) || a.label.localeCompare(b.label)
-    return a.tier ? -1 : 1
+    if (a.category && b.category)
+      return (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0) || a.label.localeCompare(b.label)
+    return a.category ? -1 : 1
   })
   for (const g of arr) {
     g.selectedCount = g.parts.filter((p) => qtyOf(p.id) > 0).length
@@ -286,7 +286,7 @@ async function onDelete(p: CustomProduct) {
           请先到「配件管理」添加配件
         </div>
         <van-collapse v-else v-model="openTiers" class="parts-collapse">
-          <van-collapse-item v-for="g in tierGroups" :key="g.key" :name="g.key">
+          <van-collapse-item v-for="g in categoryGroups" :key="g.key" :name="g.key">
             <template #title>
               <div class="flex items-center justify-between w-full pr-3">
                 <span class="text-sm font-medium">{{ g.label }}</span>

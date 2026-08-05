@@ -52,7 +52,7 @@ export async function fetchProductParts(
 ): Promise<ProductPartRow[]> {
   const { data, error } = await supabase
     .from('product_parts_relation')
-    .select('quantity, part:parts(*, tier:category_tiers(*))')
+    .select('quantity, part:parts(*, category:categories(*))')
     .eq('product_id', productId)
   if (error) throw error
   return (data ?? []) as unknown as ProductPartRow[]
