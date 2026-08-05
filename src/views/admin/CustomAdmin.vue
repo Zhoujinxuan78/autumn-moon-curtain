@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { showConfirmDialog, showToast } from 'vant'
 import { useCustomProducts } from '@/composables/useCustomProducts'
 import { useParts } from '@/composables/useParts'
 import ImageUploader from '@/components/ImageUploader.vue'
 import { formatPrice, formatDateTime } from '@/utils/format'
-import type { CustomProduct, CustomProductInput, Part } from '@/types'
+import type { CustomProduct, CustomProductInput, Part, CategoryTier } from '@/types'
 
 const { products, load, add, update, remove, setParts } = useCustomProducts()
 const { parts } = useParts()
@@ -30,6 +30,33 @@ const partQty = ref<Record<number, number>>({})
 const visibleDateLocal = ref('')
 
 const showPartsPicker = ref(false)
+
+// 关联配件：按档位分组折叠展示（先选类别，再展开该类别下的配件）
+const openTiers = ref<string[]>([])
+const tierGroups = computed(() => {
+  const map = new Map<
+    string,
+    { key: string; label: string; tier: CategoryTier | null; parts: Part[]; selectedCount: number }
+  >()
+  for (const p of parts.value) {
+    const t = p.tier ?? null
+    const key = t ? `tier-${t.id}` : 'uncat'
+    if (!map.has(key)) {
+      map.set(key, { key, label: t ? t.name : '未分类', tier: t, parts: [], selectedCount: 0 })
+    }
+    map.get(key)!.parts.push(p)
+  }
+  const arr = Array.from(map.values())
+  arr.sort((a, b) => {
+    if (a.tier && b.tier)
+      return (a.tier.sort_order ?? 0) - (b.tier.sort_order ?? 0) || a.label.localeCompare(b.label)
+    return a.tier ? -1 : 1
+  })
+  for (const g of arr) {
+    g.selectedCount = g.parts.filter((p) => qtyOf(p.id) > 0).length
+  }
+  return arr
+})
 
 function isoToLocal(iso: string | null): string {
   if (!iso) return ''
@@ -240,44 +267,55 @@ async function onDelete(p: CustomProduct) {
       </div>
     </van-popup>
 
-    <!-- 关联配件选择 -->
+    <!-- 关联配件选择：按类别分组，点击类别展开该类下的配件 -->
     <van-popup
       v-model:show="showPartsPicker"
       position="bottom"
       round
       :style="{ height: '80%' }"
     >
-      <div class="p-3">
-        <div class="text-sm font-medium mb-2">选择所用配件（数量 &gt; 0 即关联）</div>
+      <div class="p-3 flex flex-col" style="height: 100%">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-sm font-medium">选择所用配件</div>
+          <van-button size="mini" plain @click="showPartsPicker = false">完成</van-button>
+        </div>
+        <div class="text-xs text-gray-400 mb-2">
+          先选类别，再在类别下设置数量（数量 &gt; 0 即关联）
+        </div>
         <div v-if="parts.length === 0" class="text-sm text-gray-400">
           请先到「配件管理」添加配件
         </div>
-        <div v-for="p in parts" :key="p.id" class="card p-2 mb-2">
-          <div class="flex items-center justify-between">
-            <span class="text-sm">{{ p.name }}</span>
-            <span
-              v-if="p.tier"
-              class="text-[10px] px-1.5 py-0.5 rounded-full"
-              style="background: var(--curtain-primary-soft); color: var(--curtain-primary-dark)"
-            >
-              {{ p.tier.name }}
-            </span>
-          </div>
-          <div class="flex items-center justify-between mt-1.5">
-            <span class="text-xs text-gray-400">
-              {{ formatPrice(p.price, p.price_unit) }}
-            </span>
-            <van-stepper
-              :model-value="qtyOf(p.id)"
-              min="0"
-              integer
-              @change="(v: number) => setQty(p.id, v)"
-            />
-          </div>
-        </div>
-        <van-button block type="primary" class="mt-2" @click="showPartsPicker = false">
-          完成
-        </van-button>
+        <van-collapse v-else v-model="openTiers" class="parts-collapse">
+          <van-collapse-item v-for="g in tierGroups" :key="g.key" :name="g.key">
+            <template #title>
+              <div class="flex items-center justify-between w-full pr-3">
+                <span class="text-sm font-medium">{{ g.label }}</span>
+                <span class="text-[11px] text-gray-400">
+                  已选 {{ g.selectedCount }} / 共 {{ g.parts.length }}
+                </span>
+              </div>
+            </template>
+            <div v-for="p in g.parts" :key="p.id" class="card p-2 mb-2">
+              <div class="flex items-center justify-between">
+                <span class="text-sm">{{ p.name }}</span>
+              </div>
+              <div class="flex items-center justify-between mt-1.5">
+                <span class="text-xs text-gray-400">
+                  {{ formatPrice(p.price, p.price_unit) }}
+                </span>
+                <van-stepper
+                  :model-value="qtyOf(p.id)"
+                  min="0"
+                  integer
+                  @change="(v: number) => setQty(p.id, v)"
+                />
+              </div>
+            </div>
+            <div v-if="g.parts.length === 0" class="text-xs text-gray-400 py-1">
+              该类别下暂无配件
+            </div>
+          </van-collapse-item>
+        </van-collapse>
       </div>
     </van-popup>
   </div>
