@@ -32,7 +32,10 @@ const cover = computed(() => {
           <van-icon name="location-o" />
           {{ product.location || '未标注地点' }}
         </span>
-        <span class="case-date">{{ formatDateTime(product.created_at).slice(0, 10) }}</span>
+        <span class="case-date">
+          <van-icon name="clock-o" />
+          {{ formatDateTime(product.created_at).slice(0, 10) }}
+        </span>
       </div>
     </div>
   </div>
@@ -92,21 +95,19 @@ const cover = computed(() => {
 .case-meta {
   margin-top: 8px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 5px;
   font-size: 11px;
   color: var(--curtain-ink-soft);
 }
-.case-loc {
+.case-loc,
+.case-date {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.case-date {
-  flex-shrink: 0;
 }
 </style>
