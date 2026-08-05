@@ -47,7 +47,7 @@ async function onLogout() {
         </router-link>
       </nav>
 
-      <main class="flex-1 page-pad">
+      <main class="flex-1 page-pad pb-[calc(60px+env(safe-area-inset-bottom))] md:pb-0">
         <router-view />
       </main>
     </div>

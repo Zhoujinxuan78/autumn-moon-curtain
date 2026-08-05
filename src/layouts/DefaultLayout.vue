@@ -5,7 +5,7 @@ import AppHeader from '@/components/AppHeader.vue'
 <template>
   <div class="min-h-screen flex flex-col" style="background: transparent">
     <AppHeader />
-    <main class="flex-1" style="padding-bottom: 56px">
+    <main class="flex-1 pb-[calc(60px+env(safe-area-inset-bottom))]">
       <router-view />
     </main>
     <van-tabbar route fixed>
