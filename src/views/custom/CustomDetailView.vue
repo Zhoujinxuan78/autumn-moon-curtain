@@ -23,6 +23,10 @@ const images = computed(() => {
 
 const current = ref(0)
 
+function onChange(index: number) {
+  current.value = index
+}
+
 function previewProduct(index: number) {
   if (!images.value.length) return
   showImagePreview({ images: images.value, startPosition: index })
@@ -89,7 +93,7 @@ onMounted(async () => {
     <template v-else-if="product">
       <!-- 轮播：完整展示不裁切 -->
       <div v-if="images.length" class="swipe-wrap">
-        <van-swipe v-model="current" :autoplay="0">
+        <van-swipe :autoplay="0" @change="onChange">
           <van-swipe-item v-for="(img, i) in images" :key="i">
             <van-image
               :src="img"
