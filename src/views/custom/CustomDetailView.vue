@@ -21,6 +21,8 @@ const images = computed(() => {
   return arr.map((p) => getThumbUrl(p, 800, 75))
 })
 
+const current = ref(0)
+
 function previewProduct(index: number) {
   if (!images.value.length) return
   showImagePreview({ images: images.value, startPosition: index })
@@ -87,7 +89,7 @@ onMounted(async () => {
     <template v-else-if="product">
       <!-- 轮播：完整展示不裁切 -->
       <div v-if="images.length" class="swipe-wrap">
-        <van-swipe :autoplay="0">
+        <van-swipe v-model="current" :autoplay="0">
           <van-swipe-item v-for="(img, i) in images" :key="i">
             <van-image
               :src="img"
@@ -110,7 +112,7 @@ onMounted(async () => {
             </div>
           </template>
         </van-swipe>
-        <span class="swipe-count">{{ images.length }} 图</span>
+        <span class="swipe-count">{{ current + 1 }} / {{ images.length }}</span>
       </div>
 
       <div class="page-pad">
