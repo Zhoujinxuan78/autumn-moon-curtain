@@ -60,7 +60,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-pad pb-20">
+  <div class="pb-20">
     <van-nav-bar
       title="配件详情"
       left-text="返回"
@@ -71,53 +71,55 @@ onMounted(async () => {
     <van-loading v-if="loading" class="block mx-auto mt-10" />
 
     <template v-else-if="part">
-      <van-image
-        :src="activeImg"
-        fit="contain"
-        width="100%"
-        height="280"
-        radius="12"
-        style="background: var(--curtain-bg)"
-        class="cursor-pointer"
-        @click="previewImage(images.indexOf(activeImg))"
-      />
-      <div v-if="images.length > 1" class="flex gap-2 mt-2 overflow-x-auto">
-        <img
-          v-for="(img, i) in images"
-          :key="i"
-          :src="img"
-          loading="lazy"
-          class="w-16 h-16 rounded object-contain shrink-0 cursor-pointer"
-          :class="img === activeImg ? 'border-2 border-[var(--curtain-primary)]' : 'border-2 border-transparent'"
+      <div class="page-pad">
+        <van-image
+          :src="activeImg"
+          fit="contain"
+          width="100%"
+          height="280"
+          radius="12"
           style="background: var(--curtain-bg)"
-          @click="activeImg = img"
+          class="cursor-pointer"
+          @click="previewImage(images.indexOf(activeImg))"
         />
-      </div>
+        <div v-if="images.length > 1" class="flex gap-2 mt-2 overflow-x-auto">
+          <img
+            v-for="(img, i) in images"
+            :key="i"
+            :src="img"
+            loading="lazy"
+            class="w-16 h-16 rounded object-contain shrink-0 cursor-pointer"
+            :class="img === activeImg ? 'border-2 border-[var(--curtain-primary)]' : 'border-2 border-transparent'"
+            style="background: var(--curtain-bg)"
+            @click="activeImg = img"
+          />
+        </div>
 
-      <h2 class="mt-3 text-lg font-semibold">{{ part.name }}</h2>
-      <div class="mt-1 text-base font-semibold" style="color: var(--curtain-primary)">
-        {{ formatPrice(part.price, part.price_unit) }}
-      </div>
+        <h2 class="mt-3 text-lg font-semibold">{{ part.name }}</h2>
+        <div class="mt-1 text-base font-semibold" style="color: var(--curtain-primary)">
+          {{ formatPrice(part.price, part.price_unit) }}
+        </div>
 
-      <div class="mt-3 flex items-center gap-2 text-xs text-gray-500">
-        <van-tag plain type="primary">{{ categoryName }}</van-tag>
-        <van-tag v-if="tier" plain>{{ tier.name }}</van-tag>
-        <span v-if="!part.is_published" class="text-red-500">未发布</span>
-      </div>
+        <div class="mt-3 flex items-center gap-2 text-xs text-gray-500">
+          <van-tag plain type="primary">{{ categoryName }}</van-tag>
+          <van-tag v-if="tier" plain>{{ tier.name }}</van-tag>
+          <span v-if="!part.is_published" class="text-red-500">未发布</span>
+        </div>
 
-      <div v-if="part.description" class="mt-3 text-sm text-gray-600 leading-6">
-        {{ part.description }}
-      </div>
+        <div v-if="part.description" class="mt-3 text-sm text-gray-600 leading-6">
+          {{ part.description }}
+        </div>
 
-      <div v-if="specRows.length" class="card mt-3 p-3">
-        <div class="text-sm font-medium mb-2">规格参数</div>
-        <div
-          v-for="s in specRows"
-          :key="s.key"
-          class="flex justify-between text-sm py-1 border-b border-gray-50"
-        >
-          <span class="text-gray-400">{{ s.key }}</span>
-          <span>{{ s.value }}</span>
+        <div v-if="specRows.length" class="card mt-3 p-3">
+          <div class="text-sm font-medium mb-2">规格参数</div>
+          <div
+            v-for="s in specRows"
+            :key="s.key"
+            class="flex justify-between text-sm py-1 border-b border-gray-50"
+          >
+            <span class="text-gray-400">{{ s.key }}</span>
+            <span>{{ s.value }}</span>
+          </div>
         </div>
       </div>
     </template>
