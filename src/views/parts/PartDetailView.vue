@@ -6,7 +6,7 @@ import { fetchCategories } from '@/api/categories'
 import type { Part, Category } from '@/types'
 import { formatPrice, specsToList } from '@/utils/format'
 import { getPublicUrl, getThumbUrl } from '@/api/storage'
-import { showImagePreview } from 'vant'
+import { showImagePreview, type SwipeInstance } from 'vant'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,9 +14,16 @@ const part = ref<Part | null>(null)
 const categories = ref<Category[]>([])
 const loading = ref(true)
 const current = ref(0)
+const swipeRef = ref<SwipeInstance>()
 
 function onChange(index: number) {
   current.value = index
+}
+
+// 点击底部缩略图：同步 swiper 跳到对应图
+function selectThumb(i: number) {
+  current.value = i
+  swipeRef.value?.swipeTo(i)
 }
 
 function previewImage(index: number) {
@@ -78,7 +85,7 @@ onMounted(async () => {
       <div class="page-pad">
         <!-- 轮播：完整展示不裁切，可滑动，与案例详情一致 -->
         <div v-if="images.length" class="swipe-wrap">
-          <van-swipe :autoplay="0" @change="onChange">
+          <van-swipe ref="swipeRef" :autoplay="0" @change="onChange">
             <van-swipe-item v-for="(img, i) in images" :key="i">
               <van-image
                 :src="img"
@@ -102,6 +109,20 @@ onMounted(async () => {
             </template>
           </van-swipe>
           <span class="swipe-count">{{ current + 1 }} / {{ images.length }}</span>
+        </div>
+
+        <!-- 底部缩略图列表：可点击，同步 swiper -->
+        <div v-if="images.length > 1" class="flex gap-2 mt-2 overflow-x-auto thumb-strip">
+          <img
+            v-for="(img, i) in images"
+            :key="i"
+            :src="img"
+            loading="lazy"
+            class="thumb"
+            :class="i === current ? 'thumb--active' : ''"
+            style="background: var(--curtain-bg)"
+            @click="selectThumb(i)"
+          />
         </div>
 
         <h2 class="mt-3 text-lg font-semibold">{{ part.name }}</h2>
@@ -185,5 +206,24 @@ onMounted(async () => {
 .swipe-dot--active {
   width: 18px;
   background: #f2e2d6;
+}
+
+/* 底部缩略图列表 */
+.thumb-strip {
+  padding-bottom: 2px;
+}
+.thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: contain;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.thumb--active {
+  border-color: var(--curtain-primary);
+  transform: translateY(-1px);
 }
 </style>
