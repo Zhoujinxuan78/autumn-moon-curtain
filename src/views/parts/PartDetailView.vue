@@ -13,7 +13,11 @@ const router = useRouter()
 const part = ref<Part | null>(null)
 const categories = ref<Category[]>([])
 const loading = ref(true)
-const activeImg = ref('')
+const current = ref(0)
+
+function onChange(index: number) {
+  current.value = index
+}
 
 function previewImage(index: number) {
   if (!images.value.length) return
@@ -52,7 +56,7 @@ onMounted(async () => {
       fetchPart(id),
       fetchCategories(),
     ])
-    activeImg.value = images.value[0] || ''
+    current.value = 0
   } finally {
     loading.value = false
   }
@@ -72,27 +76,32 @@ onMounted(async () => {
 
     <template v-else-if="part">
       <div class="page-pad">
-        <van-image
-          :src="activeImg"
-          fit="contain"
-          width="100%"
-          height="280"
-          radius="12"
-          style="background: var(--curtain-bg)"
-          class="cursor-pointer"
-          @click="previewImage(images.indexOf(activeImg))"
-        />
-        <div v-if="images.length > 1" class="flex gap-2 mt-2 overflow-x-auto">
-          <img
-            v-for="(img, i) in images"
-            :key="i"
-            :src="img"
-            loading="lazy"
-            class="w-16 h-16 rounded object-contain shrink-0 cursor-pointer"
-            :class="img === activeImg ? 'border-2 border-[var(--curtain-primary)]' : 'border-2 border-transparent'"
-            style="background: var(--curtain-bg)"
-            @click="activeImg = img"
-          />
+        <!-- 轮播：完整展示不裁切，可滑动，与案例详情一致 -->
+        <div v-if="images.length" class="swipe-wrap">
+          <van-swipe :autoplay="0" @change="onChange">
+            <van-swipe-item v-for="(img, i) in images" :key="i">
+              <van-image
+                :src="img"
+                fit="contain"
+                width="100%"
+                height="280"
+                style="background: var(--curtain-bg)"
+                class="cursor-pointer"
+                @click="previewImage(i)"
+              />
+            </van-swipe-item>
+            <template #indicator="{ active, total }">
+              <div class="swipe-indicator">
+                <span
+                  v-for="n in total"
+                  :key="n"
+                  class="swipe-dot"
+                  :class="{ 'swipe-dot--active': active === n - 1 }"
+                />
+              </div>
+            </template>
+          </van-swipe>
+          <span class="swipe-count">{{ current + 1 }} / {{ images.length }}</span>
         </div>
 
         <h2 class="mt-3 text-lg font-semibold">{{ part.name }}</h2>
@@ -127,3 +136,54 @@ onMounted(async () => {
     <EmptyState v-else text="未找到该配件" />
   </div>
 </template>
+
+<style scoped>
+/* 轮播容器：圆角 + 暖描边，与案例详情一致 */
+.swipe-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--curtain-line);
+  box-shadow: 0 12px 30px -20px rgba(58, 44, 34, 0.4);
+}
+.swipe-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  font-size: 11px;
+  color: #fff;
+  background: rgba(58, 44, 34, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+/* 轮播指示器：底部居中胶囊条 */
+.swipe-indicator {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(58, 44, 34, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.swipe-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+.swipe-dot--active {
+  width: 18px;
+  background: #f2e2d6;
+}
+</style>

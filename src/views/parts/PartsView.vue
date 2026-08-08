@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useCategories } from '@/composables/useCategories'
 import { useParts } from '@/composables/useParts'
 import { fetchAllCategoryTiers } from '@/api/categoryTiers'
@@ -35,6 +35,14 @@ const visibleTiers = computed<CategoryTier[]>(() =>
 // 切换分类时重置档位筛选
 watch(selected, () => (selectedTier.value = 'all'))
 
+// 切换分类/档位时，列表内容回到顶部，避免滚动位置残留导致顶部 item 被遮挡
+const contentRef = ref<HTMLElement | null>(null)
+function scrollContentTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  contentRef.value?.scrollTo({ top: 0 })
+}
+watch([selected, selectedTier], () => nextTick(scrollContentTop))
+
 const list = computed(() => {
   // 隐藏档位：连带隐藏该档位下的零件（仅前台；无档位或档位可见的零件照常展示）
   let arr = parts.value.filter((p) => !p.tier || p.tier.is_visible !== false)
@@ -53,7 +61,7 @@ const list = computed(() => {
     <div class="bg-white" style="width: 90px">
       <CategorySidebar v-model="selected" :categories="categories" />
     </div>
-    <div class="flex-1 page-pad">
+    <div ref="contentRef" class="flex-1 page-pad">
       <!-- 质量档位筛选（跟随所选类别） -->
       <div v-if="visibleTiers.length" class="flex gap-2 overflow-x-auto pb-2 -mt-1">
         <span
